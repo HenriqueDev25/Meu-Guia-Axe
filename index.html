@@ -8,274 +8,173 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; background: #0B141A; color: white; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* Estilo Caderno */
+        /* Notebook Style de Notas */
         .notebook-card {
             background-color: #121212;
             background-image: linear-gradient(#1a1a1a 1px, transparent 1px);
             background-size: 100% 30px;
             border-left: 6px solid #e11d48;
             border-radius: 12px;
-            position: relative;
             min-height: 100px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
-
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.2;
-            padding: 60px 0;
-        }
-
         .checked-item { text-decoration: line-through; opacity: 0.4; }
-
-        /* Modal de Atualização */
+        
+        /* Modal de Atualizacao OTA */
         #update-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.95);
-            z-index: 100;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: 100; align-items: center; justify-content: center; padding: 20px;
         }
-
-        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .animate-spin-slow { animation: spin-slow 3s linear infinite; }
     </style>
 </head>
-<body class="bg-[#0B141A] text-zinc-100 h-screen flex flex-col overflow-hidden">
+<body class="h-screen flex flex-col overflow-hidden">
 
-<div id="update-modal">
-    <div class="bg-zinc-900 border border-red-700 p-8 rounded-[32px] w-full max-w-sm text-center shadow-2xl">
-        <div class="w-16 h-16 bg-red-700/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i data-lucide="refresh-cw" class="text-red-600 animate-spin-slow"></i>
+    <div id="update-modal">
+        <div class="bg-zinc-900 border border-red-700 p-8 rounded-[32px] w-full max-w-sm text-center">
+            <h2 class="font-black text-xl mb-1 uppercase text-white">Sistema Atualizado</h2>
+            <p class="text-zinc-500 text-[10px] mb-6 uppercase font-bold">Versao Atual: <span id="v-text" class="text-red-600"></span></p>
+            <div class="text-left bg-black/40 p-4 rounded-2xl mb-8 border border-zinc-800 text-[10px] text-zinc-300 space-y-2 uppercase font-bold">
+                <p class="text-red-600 mb-2 font-black tracking-widest text-[9px]">NOVAS FUNCOES:</p>
+                <li>+ Atualizacao Automatica via Nuvem</li>
+                <li>+ Sincronizacao em tempo real</li>
+                <li>+ Correcao de banco de dados</li>
+            </div>
+            <button onclick="closeUpdateModal()" class="w-full bg-red-700 py-4 rounded-2xl font-black text-xs uppercase tracking-widest">Entendido</button>
         </div>
-        <h2 class="font-black text-xl mb-1 uppercase tracking-tighter text-white">Nova Versao!</h2>
-        <p class="text-zinc-500 text-[10px] mb-6 uppercase font-bold tracking-widest">Versao Instalada: <span id="new-version-text" class="text-red-600"></span></p>
-
-        <div class="text-left bg-black/40 p-4 rounded-2xl mb-8 border border-zinc-800">
-            <p class="text-[9px] font-black text-zinc-500 uppercase mb-3 tracking-widest">O que mudou agora:</p>
-            <ul class="text-[10px] text-zinc-300 space-y-2 font-bold uppercase tracking-tight">
-                <li class="flex gap-2"><span class="text-red-600">NEW</span> Contador de itens na lista de compras</li>
-                <li class="flex gap-2"><span class="text-red-600">FIX</span> Melhoria na leitura do alarme em segundo plano</li>
-                <li class="flex gap-2"><span class="text-red-600">UI</span> Ajuste no brilho das notas pautadas</li>
-            </ul>
-        </div>
-
-        <button onclick="closeUpdateModal()" class="w-full bg-red-700 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] active:scale-95 transition-all">
-            Concluir Atualizacao
-        </button>
     </div>
-</div>
 
-<header class="bg-[#202C33] p-4 shadow-lg border-b border-zinc-800 flex items-center justify-center gap-3">
-    <img src="logo.png" alt="Logo" class="h-6 w-6 object-contain">
-    <h1 class="text-[10px] font-black tracking-[0.4em] text-zinc-400 uppercase">Meu Guia Axe</h1>
-</header>
+    <header class="bg-[#202C33] p-4 border-b border-zinc-800 flex items-center justify-center gap-3">
+        <img src="https://henriquedev25.github.io/Meu-Guia-Axe/logo.png" alt="Logo" class="h-6 w-6">
+        <h1 class="text-[10px] font-black tracking-[0.4em] text-zinc-400 uppercase">Meu Guia Axe</h1>
+    </header>
 
-<main class="flex-1 overflow-y-auto no-scrollbar pb-32">
+    <main class="flex-1 overflow-y-auto no-scrollbar pb-32">
+        <section id="tab-chat" class="tab-content active p-4">
+            <div id="chat-messages" class="flex flex-col gap-3"></div>
+        </section>
 
-    <section id="tab-chat" class="tab-content active p-4">
-        <div id="chat-messages" class="flex flex-col gap-3"></div>
-    </section>
+        <section id="tab-notes" class="tab-content p-4">
+            <div id="notes-list" class="flex flex-col gap-5"></div>
+        </section>
 
-    <section id="tab-notes" class="tab-content p-4">
-        <h2 class="text-zinc-500 text-[9px] font-black tracking-[0.3em] mb-4 uppercase text-center">Historico de Axe</h2>
-        <div id="notes-list" class="flex flex-col gap-5"></div>
-    </section>
-
-    <section id="tab-dates" class="tab-content p-4">
-        <div class="bg-zinc-800/40 p-6 rounded-[24px] mb-6 border border-zinc-700 shadow-xl">
-            <p class="text-[9px] font-black text-red-600 tracking-widest uppercase mb-4">Novo Lembrete</p>
-            <input type="text" id="date-title" placeholder="O que devo avisar?"
-                   class="w-full bg-transparent border-b border-zinc-700 p-2 mb-6 outline-none focus:border-red-600 text-sm font-medium text-white">
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <input type="date" id="date-day" class="bg-zinc-900 p-4 rounded-xl text-xs outline-none border border-zinc-800 text-white">
-                <input type="time" id="date-time" class="bg-zinc-900 p-4 rounded-xl text-xs outline-none border border-zinc-800 text-white">
-            </div>
-            <button onclick="addReminder()" class="w-full bg-red-700 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-95">Agendar Alarme</button>
-        </div>
-        <div id="reminders-list" class="flex flex-col gap-3"></div>
-    </section>
-
-    <section id="tab-buy" class="tab-content p-4">
-        <div class="bg-zinc-800/40 p-5 rounded-[24px] mb-6 border border-zinc-700">
-            <div class="flex justify-between items-center mb-4">
-                <p class="text-[9px] font-black text-red-600 tracking-widest uppercase">Lista de Compras</p>
-                <span id="buy-counter" class="bg-red-700/20 text-red-600 text-[10px] font-black px-3 py-1 rounded-full border border-red-700/30">0 ITENS</span>
-            </div>
-            <div class="flex gap-2">
-                <input type="text" id="buy-input" placeholder="Adicionar item..." class="flex-1 bg-transparent border-b border-zinc-700 p-2 outline-none focus:border-red-600 text-sm font-medium text-white">
-                <button onclick="addBuyItem()" class="bg-red-700 p-3 rounded-xl active:scale-90"><i data-lucide="plus" class="text-white" size="20"></i></button>
-            </div>
-        </div>
-        <div id="buy-list" class="flex flex-col gap-2 mb-6"></div>
-        <button onclick="shareBuyList()" class="w-full bg-[#25D366] text-black py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95">
-            <i data-lucide="share-2" size="16"></i> Enviar via WhatsApp
-        </button>
-    </section>
-</main>
-
-<div id="input-bar" class="fixed bottom-20 w-full p-3 bg-[#0B141A] flex gap-2 items-center border-t border-zinc-800/50">
-    <div class="flex-1 bg-[#2A3942] rounded-2xl px-4 py-2">
-        <input type="text" id="chat-input" placeholder="Escreva o axe..." class="w-full bg-transparent outline-none text-sm h-10 text-white" onkeyup="checkCorrection(event)">
-    </div>
-    <button onclick="sendMessage()" class="bg-red-700 p-3 rounded-full active:scale-90"><i data-lucide="send" class="text-white" size="20"></i></button>
-</div>
-
-<nav class="fixed bottom-0 w-full bg-[#202C33] border-t border-zinc-800 flex justify-around p-3 pb-8">
-    <button onclick="switchTab('tab-chat')" class="flex flex-col items-center gap-1 text-red-600" id="nav-tab-chat"><i data-lucide="message-square" size="18"></i><span class="text-[8px] font-black uppercase">Conversa</span></button>
-    <button onclick="switchTab('tab-notes')" class="flex flex-col items-center gap-1 text-zinc-500" id="nav-tab-notes"><i data-lucide="sticky-note" size="18"></i><span class="text-[8px] font-black uppercase">Notas</span></button>
-    <button onclick="switchTab('tab-dates')" class="flex flex-col items-center gap-1 text-zinc-500" id="nav-tab-dates"><i data-lucide="calendar-clock" size="18"></i><span class="text-[8px] font-black uppercase">Datas</span></button>
-    <button onclick="switchTab('tab-buy')" class="flex flex-col items-center gap-1 text-zinc-500" id="nav-tab-buy"><i data-lucide="shopping-cart" size="18"></i><span class="text-[8px] font-black uppercase">Compras</span></button>
-</nav>
-
-<script>
-    let messages = JSON.parse(localStorage.getItem('axe_messages')) || [];
-    let reminders = JSON.parse(localStorage.getItem('axe_reminders')) || [];
-    let buyItems = JSON.parse(localStorage.getItem('axe_buy')) || [];
-
-    const dictionary = { "pjr": "Preto Velho", "cab": "Caboclo", "axe": "Axe", "og": "Ogum", "iem": "Iemanja", "banh": "Banho de Ervas", "defu": "Defumacao", "pret": "Preto Velho", "macu": "Trabalho", "gui": "Guia", "sarav": "Sarava", "ox": "Oxossi", "ans": "Iansa", "xa": "Xango", "om": "Omulu", "oxu": "Oxum" };
-
-    function switchTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        ['tab-chat', 'tab-notes', 'tab-dates', 'tab-buy'].forEach(t => {
-            const nav = document.getElementById('nav-' + t);
-            nav.classList.replace('text-red-600', 'text-zinc-500');
-        });
-        document.getElementById('nav-' + tabId).classList.replace('text-zinc-500', 'text-red-600');
-        document.getElementById('input-bar').style.display = (tabId === 'tab-chat') ? 'flex' : 'none';
-    }
-
-    function checkCorrection(e) {
-        if (e.key === " ") {
-            const input = document.getElementById('chat-input');
-            let words = input.value.split(" ");
-            if(words.length < 2) return;
-            let lastWord = words[words.length - 2].toLowerCase();
-            if (dictionary[lastWord]) { words[words.length - 2] = dictionary[lastWord]; input.value = words.join(" "); }
-        }
-    }
-
-    function sendMessage() {
-        const input = document.getElementById('chat-input');
-        if (!input.value.trim()) return;
-        messages.push({ id: Date.now(), text: input.value, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-        input.value = ""; renderAll(); save();
-    }
-
-    function addReminder() {
-        const title = document.getElementById('date-title'), day = document.getElementById('date-day'), time = document.getElementById('date-time');
-        if (!title.value || !day.value || !time.value) return;
-        const timestamp = new Date(`${day.value}T${time.value}`).getTime();
-        reminders.push({ id: Date.now(), text: title.value, date: day.value, time: time.value, timestamp: timestamp });
-        if (window.AndroidInterface) window.AndroidInterface.agendarNotificacao("Lembrete de Axe", title.value, timestamp);
-        title.value = ""; day.value = ""; time.value = ""; renderAll(); save();
-    }
-
-    function addBuyItem() {
-        const input = document.getElementById('buy-input');
-        if (!input.value.trim()) return;
-        buyItems.push({ id: Date.now(), text: input.value, checked: false });
-        input.value = ""; renderAll(); save();
-    }
-
-    function toggleBuyItem(id) {
-        const item = buyItems.find(i => i.id === id);
-        if (item) item.checked = !item.checked;
-        renderAll(); save();
-    }
-
-    function renderAll() {
-        // Chat
-        document.getElementById('chat-messages').innerHTML = messages.map(m => `
-            <div class="self-end bg-red-700 p-3 rounded-2xl rounded-tr-none max-w-[85%] shadow-lg">
-                <p class="text-sm font-medium leading-relaxed text-white">${m.text}</p>
-                <p class="text-[8px] text-red-200 text-right mt-1 font-black uppercase">${m.time}</p>
-            </div>
-        `).join('');
-
-        // Notas
-        const noteList = document.getElementById('notes-list');
-        if (messages.length === 0) {
-            noteList.innerHTML = `<div class="notebook-card empty-state"><i data-lucide="pen-tool" class="mb-3" size="32"></i><p class="text-[10px] font-black tracking-[0.2em] uppercase">Sem Anotacoes</p></div>`;
-        } else {
-            noteList.innerHTML = messages.slice().reverse().map(m => `
-                <div class="notebook-card p-4 flex justify-between items-start gap-4">
-                    <div class="flex-1 pt-1"><p class="text-xs text-zinc-100 font-medium leading-[30px]">${m.text}</p></div>
-                    <button onclick="deleteNote(${m.id})" class="text-red-600 p-2 bg-[#1a1a1a] rounded-xl"><i data-lucide="x" size="18"></i></button>
+        <section id="tab-dates" class="tab-content p-4">
+            <div class="bg-zinc-800/40 p-6 rounded-[24px] border border-zinc-700">
+                <input type="text" id="d-title" placeholder="Aviso" class="w-full bg-transparent border-b border-zinc-700 p-2 mb-6 outline-none text-white font-bold">
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <input type="date" id="d-day" class="bg-zinc-900 p-3 rounded-xl text-white">
+                    <input type="time" id="d-time" class="bg-zinc-900 p-3 rounded-xl text-white">
                 </div>
-            `).join('');
+                <button onclick="addReminder()" class="w-full bg-red-700 py-4 rounded-xl font-black text-[10px] uppercase">Agendar</button>
+            </div>
+            <div id="reminders-list" class="mt-6 flex flex-col gap-3"></div>
+        </section>
+
+        <section id="tab-buy" class="tab-content p-4">
+            <div class="bg-zinc-800/40 p-5 rounded-[24px] border border-zinc-700">
+                <div class="flex justify-between mb-4"><p class="text-[9px] font-black text-red-600">COMPRAS</p><span id="b-count" class="text-[9px] font-black text-zinc-500">0 ITENS</span></div>
+                <div class="flex gap-2">
+                    <input type="text" id="b-input" placeholder="Adicionar..." class="flex-1 bg-transparent border-b border-zinc-700 p-2 text-white">
+                    <button onclick="addBuy()" class="bg-red-700 p-3 rounded-xl"><i data-lucide="plus" size="20"></i></button>
+                </div>
+            </div>
+            <div id="buy-list" class="mt-4 flex flex-col gap-2"></div>
+            <button onclick="shareBuy()" class="w-full bg-[#25D366] text-black py-4 mt-4 rounded-2xl font-black text-[10px] uppercase">WhatsApp</button>
+        </section>
+    </main>
+
+    <div id="input-bar" class="fixed bottom-20 w-full p-3 bg-[#0B141A] flex gap-2 items-center">
+        <input type="text" id="c-input" placeholder="Escreva..." class="flex-1 bg-[#2A3942] rounded-2xl p-3 outline-none" onkeyup="checkCorrection(event)">
+        <button onclick="sendMsg()" class="bg-red-700 p-4 rounded-full"><i data-lucide="send" size="20"></i></button>
+    </div>
+
+    <nav class="fixed bottom-0 w-full bg-[#202C33] flex justify-around p-3 pb-8">
+        <button onclick="switchTab('tab-chat')" class="text-red-600 flex flex-col items-center" id="nav-tab-chat"><i data-lucide="message-square" size="18"></i><span class="text-[8px] font-black">CONVERSA</span></button>
+        <button onclick="switchTab('tab-notes')" class="text-zinc-500 flex flex-col items-center" id="nav-tab-notes"><i data-lucide="sticky-note" size="18"></i><span class="text-[8px] font-black">NOTAS</span></button>
+        <button onclick="switchTab('tab-dates')" class="text-zinc-500 flex flex-col items-center" id="nav-tab-dates"><i data-lucide="calendar-clock" size="18"></i><span class="text-[8px] font-black">DATAS</span></button>
+        <button onclick="switchTab('tab-buy')" class="text-zinc-500 flex flex-col items-center" id="nav-tab-buy"><i data-lucide="shopping-cart" size="18"></i><span class="text-[8px] font-black">COMPRAS</span></button>
+    </nav>
+
+    <script>
+        let msgs = JSON.parse(localStorage.getItem('axe_m')) || [];
+        let rems = JSON.parse(localStorage.getItem('axe_r')) || [];
+        let buys = JSON.parse(localStorage.getItem('axe_b')) || [];
+
+        function switchTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.getElementById('input-bar').style.display = (id === 'tab-chat') ? 'flex' : 'none';
+            lucide.createIcons();
         }
 
-        // Compras + Contador
-        const pendingCount = buyItems.filter(i => !i.checked).length;
-        document.getElementById('buy-counter').innerText = `${pendingCount} ITENS`;
-        document.getElementById('buy-list').innerHTML = buyItems.map(i => `
-            <div class="bg-zinc-800/20 p-4 rounded-[18px] flex items-center justify-between border border-zinc-800/50">
-                <div class="flex items-center gap-4 flex-1" onclick="toggleBuyItem(${i.id})">
-                    <div class="w-6 h-6 rounded-lg border-2 border-red-700 flex items-center justify-center ${i.checked ? 'bg-red-700' : ''}">${i.checked ? '<i data-lucide="check" class="text-white" size="14"></i>' : ''}</div>
-                    <span class="text-sm font-bold ${i.checked ? 'checked-item' : ''}">${i.text}</span>
-                </div>
-                <button onclick="deleteBuyItem(${i.id})" class="text-zinc-700 p-1"><i data-lucide="trash-2" size="18"></i></button>
-            </div>
-        `).join('');
-
-        // Datas
-        document.getElementById('reminders-list').innerHTML = reminders.map(r => `
-            <div class="bg-zinc-800/40 p-5 rounded-[20px] flex justify-between items-center border border-zinc-700">
-                <div><p class="font-bold text-xs">${r.text}</p><p class="text-[9px] text-zinc-500 font-black uppercase mt-1">${r.date.split('-').reverse().join('/')} - ${r.time}</p></div>
-                <button onclick="deleteReminder(${r.id})" class="text-red-600 p-2 bg-red-600/10 rounded-xl"><i data-lucide="trash-2" size="18"></i></button>
-            </div>
-        `).join('');
-
-        lucide.createIcons();
-        const chat = document.getElementById('tab-chat');
-        chat.scrollTop = chat.scrollHeight;
-    }
-
-    function deleteNote(id) { messages = messages.filter(m => m.id !== id); renderAll(); save(); }
-    function deleteReminder(id) { reminders = reminders.filter(r => r.id !== id); renderAll(); save(); }
-    function deleteBuyItem(id) { buyItems = buyItems.filter(i => i.id !== id); renderAll(); save(); }
-    function save() { localStorage.setItem('axe_messages', JSON.stringify(messages)); localStorage.setItem('axe_reminders', JSON.stringify(reminders)); localStorage.setItem('axe_buy', JSON.stringify(buyItems)); }
-
-    function shareBuyList() {
-        let text = "*LISTA DE COMPRAS - MEU GUIA AXE*\n\n";
-        buyItems.forEach(i => { text += i.checked ? `~${i.text}~\n` : `[ ] ${i.text}\n`; });
-        window.location.href = "whatsapp://send?text=" + encodeURIComponent(text);
-    }
-
-    function checkAppUpdate() {
-        if (window.AndroidInterface && window.AndroidInterface.getAppVersion) {
-            const currentVersion = window.AndroidInterface.getAppVersion();
-            const lastSeenVersion = localStorage.getItem('last_seen_version');
-            if (lastSeenVersion && lastSeenVersion !== currentVersion) {
-                document.getElementById('new-version-text').innerText = currentVersion;
-                document.getElementById('update-modal').style.display = 'flex';
-                lucide.createIcons();
-            } else if (!lastSeenVersion) {
-                localStorage.setItem('last_seen_version', currentVersion);
+        function checkCorrection(e) {
+            const dic = { "axe": "Axe", "og": "Ogum", "iem": "Iemanja", "pret": "Preto Velho" };
+            if (e.key === " ") {
+                let v = e.target.value.split(" ");
+                let last = v[v.length-2].toLowerCase();
+                if(dic[last]) { v[v.length-2] = dic[last]; e.target.value = v.join(" "); }
             }
         }
-    }
 
-    function closeUpdateModal() {
-        const currentVersion = window.AndroidInterface.getAppVersion();
-        localStorage.setItem('last_seen_version', currentVersion);
-        document.getElementById('update-modal').style.display = 'none';
-    }
+        function sendMsg() {
+            let i = document.getElementById('c-input');
+            if(!i.value) return;
+            msgs.push({id: Date.now(), text: i.value, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})});
+            i.value = ""; render(); save();
+        }
 
-    window.onload = () => { renderAll(); lucide.createIcons(); checkAppUpdate(); };
-</script>
+        function addReminder() {
+            let t = document.getElementById('d-title'), d = document.getElementById('d-day'), h = document.getElementById('d-time');
+            if(!t.value || !d.value || !h.value) return;
+            let ts = new Date(`${d.value}T${h.value}`).getTime();
+            rems.push({id: ts, text: t.value, date: d.value, time: h.value});
+            if(window.AndroidInterface) window.AndroidInterface.agendarNotificacao("Lembrete Axe", t.value, ts);
+            t.value = ""; render(); save();
+        }
+
+        function addBuy() {
+            let i = document.getElementById('b-input');
+            if(!i.value) return;
+            buys.push({id: Date.now(), text: i.value, checked: false});
+            i.value = ""; render(); save();
+        }
+
+        function render() {
+            document.getElementById('chat-messages').innerHTML = msgs.map(m => `<div class="self-end bg-red-700 p-3 rounded-2xl rounded-tr-none max-w-[85%] shadow-lg"><p class="text-sm font-bold text-white">${m.text}</p><p class="text-[8px] text-red-200 text-right mt-1">${m.time}</p></div>`).join('');
+            
+            const nList = document.getElementById('notes-list');
+            if(msgs.length === 0) nList.innerHTML = `<div class="notebook-card flex items-center justify-center opacity-20"><p class="text-[10px] font-black uppercase">Vazio</p></div>`;
+            else nList.innerHTML = msgs.slice().reverse().map(m => `<div class="notebook-card p-4 flex justify-between items-start"><p class="text-xs font-bold leading-[30px]">${m.text}</p><button onclick="delN(${m.id})" class="text-red-600"><i data-lucide="x" size="18"></i></button></div>`).join('');
+
+            document.getElementById('buy-list').innerHTML = buys.map(b => `<div class="bg-zinc-800/30 p-4 rounded-xl flex items-center justify-between border border-zinc-800"><div class="flex items-center gap-3" onclick="tBuy(${b.id})"><div class="w-5 h-5 rounded border-2 border-red-700 ${b.checked?'bg-red-700':''}"></div><span class="text-sm ${b.checked?'checked-item':''}">${b.text}</span></div><button onclick="delB(${b.id})"><i data-lucide="trash-2" size="16"></i></button></div>`).join('');
+            
+            document.getElementById('reminders-list').innerHTML = rems.map(r => `<div class="bg-zinc-800/40 p-4 rounded-2xl flex justify-between items-center"><div><p class="font-bold text-xs">${r.text}</p><p class="text-[8px] text-zinc-500 uppercase mt-1">${r.date} - ${r.time}</p></div><button onclick="delR(${r.id})" class="text-red-500"><i data-lucide="trash-2" size="18"></i></button></div>`).join('');
+            
+            lucide.createIcons();
+        }
+
+        function delN(id) { msgs = msgs.filter(m => m.id !== id); render(); save(); }
+        function delB(id) { buys = buys.filter(b => b.id !== id); render(); save(); }
+        function delR(id) { rems = rems.filter(r => r.id !== id); render(); save(); }
+        function tBuy(id) { let i = buys.find(x => x.id === id); i.checked = !i.checked; render(); save(); }
+        function save() { localStorage.setItem('axe_m', JSON.stringify(msgs)); localStorage.setItem('axe_r', JSON.stringify(rems)); localStorage.setItem('axe_b', JSON.stringify(buys)); }
+        function shareBuy() { let t = "*LISTA AXE*\n\n" + buys.map(b => (b.checked?"~":"[ ] ")+b.text+(b.checked?"~":"")).join("\n"); window.location.href = "whatsapp://send?text=" + encodeURIComponent(t); }
+
+        function checkUp() {
+            if(window.AndroidInterface) {
+                let cur = window.AndroidInterface.getAppVersion();
+                let last = localStorage.getItem('v');
+                if(last && last !== cur) { document.getElementById('v-text').innerText = cur; document.getElementById('update-modal').style.display='flex'; }
+                localStorage.setItem('v', cur);
+            }
+        }
+
+        function closeUpdateModal() { document.getElementById('update-modal').style.display='none'; }
+        window.onload = () => { render(); checkUp(); lucide.createIcons(); };
+    </script>
 </body>
 </html>
