@@ -21,7 +21,7 @@
         .tab-content { display: none; height: 100%; overflow-y: auto; }
         .tab-content.active { display: block; }
 
-        /* Estilo Caderno Pautado */
+        /* Estilo Caderno Pautado - Ajustado para alinhar o texto */
         .notebook-card {
             background-color: #121212;
             background-image: linear-gradient(#1a1a1a 1px, transparent 1px);
@@ -31,187 +31,254 @@
             min-height: 120px;
             line-height: 30px;
             box-shadow: 0 10px 15px rgba(0,0,0,0.5);
+            padding-top: 4px;
         }
 
         .checked-item { text-decoration: line-through; opacity: 0.3; }
 
-        #update-modal {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            z-index: 999; align-items: center; justify-content: center; padding: 20px;
-        }
-
         main { padding-bottom: 120px; }
+
+        /* Estilo para avisos de privacidade */
+        .privacy-box {
+            font-size: 10px;
+            color: #71717a;
+            text-align: center;
+            padding: 20px;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body class="h-screen flex flex-col">
 
-    <div id="update-modal">
-        <div class="bg-zinc-900 border border-red-700 p-8 rounded-[32px] w-full max-w-sm text-center">
-            <h2 class="font-black text-xl mb-1 uppercase text-white">App Atualizado</h2>
-            <p class="text-zinc-500 text-[10px] mb-6 uppercase font-bold tracking-widest">Nova versao: <span id="v-text" class="text-red-600"></span></p>
-            <button onclick="closeUpdateModal()" class="w-full bg-red-700 py-4 rounded-2xl font-black text-xs uppercase tracking-widest">Entendido</button>
-        </div>
-    </div>
-
-    <header class="bg-[#202C33] p-4 border-b border-zinc-800 flex items-center justify-center gap-3">
+    <header class="bg-[#202C33] p-4 border-b border-zinc-800 flex items-center justify-center gap-3 shrink-0">
         <img src="logo.png" class="h-6 w-6 object-contain" onerror="this.style.display='none'">
         <h1 class="text-[10px] font-black tracking-[0.4em] text-zinc-400 uppercase">Meu Guia Axe</h1>
     </header>
 
     <main class="flex-1 overflow-hidden relative">
+        
         <section id="tab-chat" class="tab-content active p-4 no-scrollbar">
             <div id="chat-messages" class="flex flex-col gap-3"></div>
+            <div class="privacy-box">
+                Uso individual: os dados são armazenados localmente no seu dispositivo.
+            </div>
         </section>
 
         <section id="tab-notes" class="tab-content p-4 no-scrollbar">
+            <h2 class="text-zinc-500 text-[9px] font-black tracking-[0.3em] mb-4 uppercase text-center">Fundamentos e Notas</h2>
             <div id="notes-list" class="flex flex-col gap-6"></div>
         </section>
 
         <section id="tab-dates" class="tab-content p-4 no-scrollbar">
             <div class="bg-zinc-800/40 p-6 rounded-[24px] border border-zinc-700 mb-6 shadow-xl">
-                <input type="text" id="d-title" placeholder="Aviso" class="w-full bg-transparent border-b border-zinc-700 p-2 mb-6 outline-none text-white font-bold">
+                <p class="text-[9px] font-black text-red-600 tracking-widest uppercase mb-4">Novo Lembrete</p>
+                <input type="text" id="d-title" placeholder="O que avisar?" class="w-full bg-transparent border-b border-zinc-700 p-2 mb-6 outline-none text-white font-bold">
                 <div class="grid grid-cols-2 gap-4 mb-6">
-                    <input type="date" id="d-day" class="bg-zinc-900 p-3 rounded-xl text-white text-xs">
-                    <input type="time" id="d-time" class="bg-zinc-900 p-3 rounded-xl text-white text-xs">
+                    <input type="date" id="d-day" class="bg-zinc-900 p-3 rounded-xl text-white text-xs border border-zinc-800">
+                    <input type="time" id="d-time" class="bg-zinc-900 p-3 rounded-xl text-white text-xs border border-zinc-800">
                 </div>
-                <button onclick="addReminder()" class="w-full bg-red-700 py-4 rounded-xl font-black text-[10px] uppercase">Salvar Alarme</button>
+                <button onclick="addReminder()" class="w-full bg-red-700 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest">Agendar</button>
             </div>
             <div id="reminders-list" class="flex flex-col gap-3"></div>
         </section>
 
         <section id="tab-buy" class="tab-content p-4 no-scrollbar">
             <div class="bg-zinc-800/40 p-5 rounded-[24px] border border-zinc-700 mb-4">
-                <div class="flex justify-between items-center mb-4 text-[9px] font-black">
-                    <p class="text-red-600 uppercase">Lista de Compras</p>
-                    <span id="b-count" class="text-zinc-500">0 ITENS</span>
+                <div class="flex justify-between items-center mb-4">
+                    <p class="text-[9px] font-black text-red-600 uppercase tracking-widest">Compras</p>
+                    <span id="b-count" class="text-[9px] font-black text-zinc-500 bg-zinc-900 px-2 py-1 rounded">0 ITENS</span>
                 </div>
                 <div class="flex gap-2">
-                    <input type="text" id="b-input" placeholder="Adicionar..." class="flex-1 bg-transparent border-b border-zinc-700 p-2 text-white text-sm">
-                    <button onclick="addBuy()" class="bg-red-700 p-3 rounded-xl"><i data-lucide="plus" size="20"></i></button>
+                    <input type="text" id="b-input" placeholder="Adicionar item..." class="flex-1 bg-transparent border-b border-zinc-700 p-2 text-white text-sm outline-none">
+                    <button onclick="addBuy()" class="bg-red-700 p-3 rounded-xl active:scale-90"><i data-lucide="plus" size="20"></i></button>
                 </div>
             </div>
             <div id="buy-list" class="flex flex-col gap-2 mb-4"></div>
-            <button onclick="shareBuy()" class="w-full bg-[#25D366] text-black py-4 rounded-2xl font-black text-[10px] uppercase flex items-center justify-center gap-2">
-                <i data-lucide="share-2" size="16"></i> WhatsApp
+            <button onclick="shareBuy()" class="w-full bg-[#25D366] text-black py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95">
+                <i data-lucide="share-2" size="16"></i> Enviar via WhatsApp
             </button>
         </section>
     </main>
 
-    <div id="input-bar" class="fixed bottom-20 w-full p-4 bg-[#0B141A] flex gap-2 items-center">
-        <input type="text" id="c-input" placeholder="Escreva aqui..." class="flex-1 bg-[#2A3942] rounded-2xl p-3 outline-none text-sm text-white" onkeyup="checkCorrection(event)">
-        <button onclick="sendMsg()" class="bg-red-700 p-4 rounded-full"><i data-lucide="send" size="20"></i></button>
+    <div id="input-bar" class="fixed bottom-20 w-full p-4 bg-[#0B141A] flex gap-2 items-center z-40">
+        <div class="flex-1 bg-[#2A3942] rounded-2xl px-4">
+            <input type="text" id="c-input" placeholder="Digite o axe..." class="w-full bg-transparent outline-none h-12 text-sm text-white" onkeyup="checkCorrection(event)">
+        </div>
+        <button onclick="sendMsg()" class="bg-red-700 p-4 rounded-full shadow-lg active:scale-90">
+            <i data-lucide="send" size="20"></i>
+        </button>
     </div>
 
-    <nav class="fixed bottom-0 w-full bg-[#202C33] flex justify-around p-3 border-t border-zinc-800 pb-8">
-        <button onclick="switchTab('tab-chat')" class="flex flex-col items-center gap-1 text-red-600" id="nav-tab-chat"><i data-lucide="message-square" size="18"></i><span class="text-[8px] font-black">CONVERSA</span></button>
-        <button onclick="switchTab('tab-notes')" class="flex flex-col items-center gap-1 text-zinc-500" id="nav-tab-notes"><i data-lucide="sticky-note" size="18"></i><span class="text-[8px] font-black">NOTAS</span></button>
-        <button onclick="switchTab('tab-dates')" class="flex flex-col items-center gap-1 text-zinc-500" id="nav-tab-dates"><i data-lucide="calendar-clock" size="18"></i><span class="text-[8px] font-black">DATAS</span></button>
-        <button onclick="switchTab('tab-buy')" class="flex flex-col items-center gap-1 text-zinc-500" id="nav-tab-buy"><i data-lucide="shopping-cart" size="18"></i><span class="text-[8px] font-black">COMPRAS</span></button>
+    <nav class="fixed bottom-0 w-full bg-[#202C33] flex justify-around p-3 border-t border-zinc-800 pb-8 z-50">
+        <button onclick="switchTab('tab-chat')" class="flex flex-col items-center gap-1 text-red-600" id="nav-tab-chat"><i data-lucide="message-square" size="18"></i><span class="text-[8px] font-black uppercase">Conversa</span></button>
+        <button onclick="switchTab('tab-notes')" class="flex flex-col items-center gap-1 text-zinc-500" id="nav-tab-notes"><i data-lucide="sticky-note" size="18"></i><span class="text-[8px] font-black uppercase">Notas</span></button>
+        <button onclick="switchTab('tab-dates')" class="flex flex-col items-center gap-1 text-zinc-500" id="nav-tab-dates"><i data-lucide="calendar-clock" size="18"></i><span class="text-[8px] font-black uppercase">Datas</span></button>
+        <button onclick="switchTab('tab-buy')" class="flex flex-col items-center gap-1 text-zinc-500" id="nav-tab-buy"><i data-lucide="shopping-cart" size="18"></i><span class="text-[8px] font-black uppercase">Compras</span></button>
     </nav>
 
+    <script type="module">
+        // --- FIREBASE SETUP ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-messaging.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA0dsLtR2gnW6IkghjLyjRnH_hatgqLeoA",
+            authDomain: "meu-gui-axe.firebaseapp.com",
+            projectId: "meu-gui-axe",
+            storageBucket: "meu-gui-axe.firebasestorage.app",
+            messagingSenderId: "589824726080",
+            appId: "1:589824726080:web:1b7e366e5099da96c43ba5",
+            measurementId: "G-8W4FK6XV30"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const messaging = getMessaging(app);
+
+        // Solicitar Token para Notificações Web
+        async function initFCM() {
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    const token = await getToken(messaging, { 
+                        vapidKey: 'BO3q1vuQR5Il-IFvmgfOpQin4hS9lZe9dN6RAHFRp-aQYWw3RC9v9XdyK4rMM31O4kpwEk26jeXsAbGorwd0pgc' 
+                    });
+                    if (token) {
+                        console.log("Token FCM Gerado:", token);
+                        // Henrique, use este token no Console do Firebase para testar o envio
+                    }
+                }
+            } catch (err) {
+                console.log("Erro ao obter token FCM:", err);
+            }
+        }
+
+        // Ouvir mensagens com o site aberto
+        onMessage(messaging, (payload) => {
+            alert(`${payload.notification.title}: ${payload.notification.body}`);
+        });
+
+        initFCM();
+    </script>
+
     <script>
-        // Dados locais
+        // --- LOGICA DO APP ---
         let msgs = JSON.parse(localStorage.getItem('axe_m')) || [];
         let rems = JSON.parse(localStorage.getItem('axe_r')) || [];
         let buys = JSON.parse(localStorage.getItem('axe_b')) || [];
 
-        // Registro de Service Worker para Notificações Web
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
-        }
+        const dictionary = { "axe": "Axe", "og": "Ogum", "iem": "Iemanja", "pret": "Preto Velho", "cab": "Caboclo", "xa": "Xango", "ox": "Oxossi", "ans": "Iansa" };
 
-        async function requestNotif() {
-            if (!window.AndroidInterface && 'Notification' in window) {
-                await Notification.requestPermission();
-            }
-        }
-
-        function switchTab(id) {
+        window.switchTab = function(id) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             ['tab-chat', 'tab-notes', 'tab-dates', 'tab-buy'].forEach(t => {
-                document.getElementById('nav-' + t).classList.replace('text-red-600', 'text-zinc-500');
+                const nav = document.getElementById('nav-' + t);
+                nav.classList.replace('text-red-600', 'text-zinc-500');
             });
             document.getElementById('nav-' + id).classList.replace('text-zinc-500', 'text-red-600');
             document.getElementById('input-bar').style.display = (id === 'tab-chat') ? 'flex' : 'none';
             lucide.createIcons();
         }
 
-        function checkCorrection(e) {
-            const dic = {"axe":"Axe","og":"Ogum","iem":"Iemanja","pret":"Preto Velho","cab":"Caboclo"};
+        window.checkCorrection = function(e) {
             if (e.key === " ") {
-                let v = e.target.value.split(" ");
-                let last = v[v.length-2]?.toLowerCase();
-                if(dic[last]) { v[v.length-2] = dic[last]; e.target.value = v.join(" "); }
+                let i = e.target;
+                let w = i.value.split(" ");
+                if(w.length < 2) return;
+                let last = w[w.length - 2].toLowerCase();
+                if (dictionary[last]) { w[w.length - 2] = dictionary[last]; i.value = w.join(" "); }
             }
         }
 
-        function sendMsg() {
+        window.sendMsg = function() {
             let i = document.getElementById('c-input');
             if(!i.value.trim()) return;
             msgs.push({id: Date.now(), text: i.value, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})});
             i.value = ""; render(); save();
         }
 
-        function addReminder() {
+        window.addReminder = function() {
             let t = document.getElementById('d-title'), d = document.getElementById('d-day'), h = document.getElementById('d-time');
             if(!t.value || !d.value || !h.value) return;
             let ts = new Date(`${d.value}T${h.value}`).getTime();
-            let delay = ts - Date.now();
-
-            if(delay < 0) return alert("Data ja passou!");
-
+            if(ts < Date.now()) return alert("Data ja passou!");
+            
             rems.push({id: ts, text: t.value, date: d.value, time: h.value});
-
-            if(window.AndroidInterface) {
-                window.AndroidInterface.agendarNotificacao("Aviso de Axe", t.value, ts);
-            } else if ('serviceWorker' in navigator && Notification.permission === 'granted') {
-                navigator.serviceWorker.ready.then(reg => {
-                    reg.active.postMessage({type: 'SCHEDULE', title: "Lembrete Axe", body: t.value, delay: delay});
-                });
-            }
-
-            t.value = ""; render(); save();
+            t.value = ""; d.value = ""; h.value = "";
+            render(); save();
+            alert("Lembrete salvo no seu dispositivo!");
         }
 
-        function addBuy() {
+        window.addBuy = function() {
             let i = document.getElementById('b-input');
             if(!i.value.trim()) return;
             buys.push({id: Date.now(), text: i.value, checked: false});
             i.value = ""; render(); save();
         }
 
-        function render() {
-            document.getElementById('chat-messages').innerHTML = msgs.map(m => `<div class="self-end bg-red-700 p-3 rounded-2xl rounded-tr-none max-w-[85%] shadow-lg"><p class="text-sm font-bold text-white">${m.text}</p><p class="text-[8px] text-red-200 text-right mt-1 font-black">${m.time}</p></div>`).join('');
-            
+        window.render = function() {
+            document.getElementById('chat-messages').innerHTML = msgs.map(m => `
+                <div class="self-end bg-red-700 p-3 rounded-2xl rounded-tr-none max-w-[85%] shadow-lg">
+                    <p class="text-sm font-bold text-white">${m.text}</p>
+                    <p class="text-[8px] text-red-200 text-right mt-1 font-black">${m.time}</p>
+                </div>
+            `).join('');
+
             const nList = document.getElementById('notes-list');
-            nList.innerHTML = msgs.length === 0 ? `<div class="notebook-card flex items-center justify-center opacity-20 text-[10px] font-black uppercase">Vazio</div>` : 
-            msgs.slice().reverse().map(m => `<div class="notebook-card p-4 flex justify-between items-start gap-4"><div class="flex-1 pt-2 font-medium">${m.text}</div><button onclick="delN(${m.id})" class="text-red-600 p-2"><i data-lucide="x" size="16"></i></button></div>`).join('');
+            if(msgs.length === 0) {
+                nList.innerHTML = `<div class="notebook-card flex items-center justify-center opacity-20"><p class="text-[10px] font-black uppercase tracking-widest">Sem Anotacoes</p></div>`;
+            } else {
+                nList.innerHTML = msgs.slice().reverse().map(m => `
+                    <div class="notebook-card p-4 flex justify-between items-start gap-4">
+                        <div class="flex-1 font-medium text-xs">${m.text}</div>
+                        <button onclick="delN(${m.id})" class="text-red-600 p-2"><i data-lucide="x" size="16"></i></button>
+                    </div>
+                `).join('');
+            }
 
             document.getElementById('b-count').innerText = `${buys.filter(b => !b.checked).length} ITENS`;
-            document.getElementById('buy-list').innerHTML = buys.map(b => `<div class="bg-zinc-800/30 p-4 rounded-xl flex items-center justify-between border border-zinc-800"><div class="flex items-center gap-4 flex-1" onclick="tBuy(${b.id})"><div class="w-6 h-6 rounded border-2 border-red-700 ${b.checked?'bg-red-700':''}"></div><span class="text-sm font-bold ${b.checked?'checked-item':''}">${b.text}</span></div><button onclick="delB(${b.id})" class="text-zinc-600"><i data-lucide="trash-2" size="18"></i></button></div>`).join('');
+            document.getElementById('buy-list').innerHTML = buys.map(b => `
+                <div class="bg-zinc-800/30 p-4 rounded-xl flex items-center justify-between border border-zinc-800">
+                    <div class="flex items-center gap-4 flex-1" onclick="tBuy(${b.id})">
+                        <div class="w-6 h-6 rounded border-2 border-red-700 flex items-center justify-center ${b.checked?'bg-red-700':''}">
+                            ${b.checked ? '<i data-lucide="check" class="text-white" size="14"></i>' : ''}
+                        </div>
+                        <span class="text-sm font-bold ${b.checked?'checked-item':''}">${b.text}</span>
+                    </div>
+                    <button onclick="delB(${b.id})" class="text-zinc-600"><i data-lucide="trash-2" size="18"></i></button>
+                </div>
+            `).join('');
 
-            document.getElementById('reminders-list').innerHTML = rems.map(r => `<div class="bg-zinc-800/40 p-5 rounded-2xl flex justify-between items-center border border-zinc-700"><div><p class="font-bold text-xs">${r.text}</p><p class="text-[8px] text-zinc-500 uppercase mt-1 font-black">${r.date.split('-').reverse().join('/')} - ${r.time}</p></div><button onclick="delR(${r.id})" class="text-red-500 bg-red-600/10 p-2 rounded-xl"><i data-lucide="trash-2" size="18"></i></button></div>`).join('');
+            document.getElementById('reminders-list').innerHTML = rems.map(r => `
+                <div class="bg-zinc-800/40 p-5 rounded-2xl flex justify-between items-center border border-zinc-700">
+                    <div>
+                        <p class="font-bold text-xs">${r.text}</p>
+                        <p class="text-[8px] text-zinc-500 uppercase mt-1 font-black">${r.date.split('-').reverse().join('/')} - ${r.time}</p>
+                    </div>
+                    <button onclick="delR(${r.id})" class="text-red-500 p-2"><i data-lucide="trash-2" size="18"></i></button>
+                </div>
+            `).join('');
+            
             lucide.createIcons();
         }
 
-        function delN(id) { msgs = msgs.filter(m => m.id !== id); render(); save(); }
-        function delB(id) { buys = buys.filter(b => b.id !== id); render(); save(); }
-        function delR(id) { rems = rems.filter(r => r.id !== id); render(); save(); }
-        function tBuy(id) { let i = buys.find(x => x.id === id); i.checked = !i.checked; render(); save(); }
-        function save() { localStorage.setItem('axe_m', JSON.stringify(msgs)); localStorage.setItem('axe_r', JSON.stringify(rems)); localStorage.setItem('axe_b', JSON.stringify(buys)); }
-        function shareBuy() { let t = "*LISTA AXE*\n\n" + buys.map(b => (b.checked?"~":"- ")+b.text+(b.checked?"~":"")).join("\n"); window.location.href = "whatsapp://send?text=" + encodeURIComponent(t); }
-
-        function checkUp() {
-            if(window.AndroidInterface) {
-                let cur = window.AndroidInterface.getAppVersion();
-                let last = localStorage.getItem('v');
-                if(last && last !== cur) { document.getElementById('v-text').innerText = cur; document.getElementById('update-modal').style.display='flex'; }
-                localStorage.setItem('v', cur);
-            }
+        window.delN = function(id) { msgs = msgs.filter(m => m.id !== id); render(); save(); }
+        window.delB = function(id) { buys = buys.filter(b => b.id !== id); render(); save(); }
+        window.delR = function(id) { rems = rems.filter(r => r.id !== id); render(); save(); }
+        window.tBuy = function(id) { let i = buys.find(x => x.id === id); i.checked = !i.checked; render(); save(); }
+        
+        window.save = function() { 
+            localStorage.setItem('axe_m', JSON.stringify(msgs)); 
+            localStorage.setItem('axe_r', JSON.stringify(rems)); 
+            localStorage.setItem('axe_b', JSON.stringify(buys)); 
         }
-        function closeUpdateModal() { document.getElementById('update-modal').style.display='none'; }
-        window.onload = () => { render(); checkUp(); lucide.createIcons(); requestNotif(); };
+
+        window.shareBuy = function() { 
+            let t = "*LISTA DE COMPRAS - AXE*\n\n" + buys.map(b => (b.checked?"~":"- ")+b.text+(b.checked?"~":"")).join("\n"); 
+            window.location.href = "whatsapp://send?text=" + encodeURIComponent(t); 
+        }
+
+        window.onload = () => { render(); lucide.createIcons(); };
     </script>
 </body>
 </html>
