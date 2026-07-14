@@ -86,7 +86,7 @@
         <section id="tab-chat" class="tab-content active p-4 no-scrollbar">
             <div id="chat-messages" class="flex flex-col gap-4"></div>
             <div class="privacy-box">
-                Os dados do chat são armazenados localmente e criptografados[cite: 1].
+                Os dados do chat são armazenados localmente e criptografados.
             </div>
         </section>
 
@@ -228,10 +228,9 @@
             }
         }
 
-        // Inteligência para interpretar texto e transformar em data/hora
+        // Inteligência para interpretar texto
         window.analisarLembrete = function(texto) {
             texto = texto.toLowerCase();
-            // Detecta: [tarefa] + [dia da semana / hoje / amanhã] + [opcional: as/às 14:00]
             const regex = /(.*?)\s+(segunda|terça|terca|quarta|quinta|sexta|sábado|sabado|domingo|amanhã|amanha|hoje)(?:\s+(?:as|às)\s+(\d{1,2}(?::\d{2})?))?/i;
             const match = texto.match(regex);
             
@@ -242,7 +241,7 @@
                 let diaTexto = match[2];
                 let horaTexto = match[3]; 
                 
-                if(!horaTexto) horaTexto = "08:00"; // Horário padrão
+                if(!horaTexto) horaTexto = "08:00"; 
                 if(!horaTexto.includes(":")) horaTexto += ":00";
                 if(horaTexto.length === 4) horaTexto = "0" + horaTexto; 
 
@@ -256,7 +255,7 @@
                     let diaDesejado = mapaDias[diaTexto];
                     let diaAtual = hoje.getDay();
                     let diff = diaDesejado - diaAtual;
-                    if(diff <= 0) diff += 7; // Próxima semana
+                    if(diff <= 0) diff += 7; 
                     dataAlvo.setDate(hoje.getDate() + diff);
                 }
 
@@ -268,6 +267,35 @@
                 };
             }
             return null;
+        }
+
+        // API Nativa de Calendário
+        window.addNativeCalendar = function(title, dateInput, timeInput) {
+            let [y, m, d] = dateInput.split('-');
+            let [h, min] = timeInput.split(':');
+            
+            let dataInicio = `${y}${m}${d}T${h}${min}00`;
+            let hFim = String((parseInt(h) + 1) % 24).padStart(2, '0');
+            let dataFim = `${y}${m}${d}T${hFim}${min}00`;
+
+            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${dataInicio}\nDTEND:${dataFim}\nSUMMARY:${title}\nDESCRIPTION:Adicionado pelo Meu Guia.\nBEGIN:VALARM\nTRIGGER:-PT0M\nACTION:DISPLAY\nDESCRIPTION:Lembrete\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR`;
+
+            // Tentativa 1: Usar compartilhamento nativo do iOS/Android (Web Share API)
+            if (navigator.share && navigator.canShare) {
+                const file = new File([icsContent], 'lembrete.ics', { type: 'text/calendar' });
+                if (navigator.canShare({ files: [file] })) {
+                    navigator.share({
+                        files: [file],
+                        title: title,
+                        text: 'Salvar Lembrete'
+                    }).catch(err => console.log('Usuário cancelou ou erro no share:', err));
+                    return; // Se funcionou, encerra a função
+                }
+            }
+
+            // Tentativa 2: Fallback direto para o Google Agenda (Funciona sempre em qualquer mobile)
+            let gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dataInicio}/${dataFim}&details=Adicionado+pelo+Meu+Guia`;
+            window.open(gCalUrl, '_blank');
         }
 
         window.sendMsg = function() {
@@ -287,30 +315,12 @@
             if(intel) {
                 let ts = new Date(`${intel.dataFormatada}T${intel.horaTexto}`).getTime();
                 rems.push({id: ts, text: intel.tarefa, date: intel.dataFormatada, time: intel.horaTexto});
+                
+                // Dispara o calendário IMEDIATAMENTE e AUTOMATICAMENTE junto com o clique do usuário
+                addNativeCalendar(intel.tarefa, intel.dataFormatada, intel.horaTexto);
             }
 
             i.value = ""; render(); save();
-        }
-
-        // Função nativa para criar notificação no relógio/calendário
-        window.addNativeCalendar = function(title, dateInput, timeInput) {
-            let [y, m, d] = dateInput.split('-');
-            let [h, min] = timeInput.split(':');
-            let dataInicio = `${y}${m}${d}T${h}${min}00`;
-            
-            let hFim = String((parseInt(h) + 1) % 24).padStart(2, '0');
-            let dataFim = `${y}${m}${d}T${hFim}${min}00`;
-
-            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${dataInicio}\nDTEND:${dataFim}\nSUMMARY:${title}\nDESCRIPTION:Lembrete ativado pelo Meu Guia.\nBEGIN:VALARM\nTRIGGER:-PT0M\nACTION:DISPLAY\nDESCRIPTION:Lembrete\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR`;
-
-            let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-            let url = window.URL.createObjectURL(blob);
-            let a = document.createElement('a');
-            a.href = url;
-            a.download = `${title.replace(/\s+/g, '_')}.ics`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
         }
 
         window.addReminder = function() {
@@ -320,6 +330,9 @@
             if(ts < Date.now()) return alert("Data já passou!");
             
             rems.push({id: ts, text: t.value, date: d.value, time: h.value});
+            // Também adiciona no celular quando preenchido manualmente
+            addNativeCalendar(t.value, d.value, h.value);
+            
             t.value = ""; d.value = ""; h.value = "";
             render(); save();
         }
@@ -332,13 +345,13 @@
         }
 
         window.render = function() {
-            // Renderiza Mensagens e o Botão Inteligente
+            // Renderiza Mensagens
             document.getElementById('chat-messages').innerHTML = msgs.map(m => `
                 <div class="self-end bg-[#FF3B30] p-3 px-4 rounded-2xl rounded-tr-sm max-w-[80%] shadow-sm transition-all">
                     <p class="text-[15px] font-medium text-white leading-snug">${m.text}</p>
                     ${m.smart ? `
                         <button onclick="addNativeCalendar('${m.smart.tarefa}', '${m.smart.dataFormatada}', '${m.smart.horaTexto}')" class="mt-3 bg-black/20 hover:bg-black/30 text-white text-[11px] font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 active:scale-95 transition-all w-full shadow-inner">
-                            <i data-lucide="alarm-clock" size="14"></i> Adicionar no Celular
+                            <i data-lucide="refresh-cw" size="14"></i> Reabrir Calendário
                         </button>
                     ` : ''}
                     <p class="text-[10px] text-white/70 text-right mt-2 font-medium">${m.time}</p>
@@ -372,7 +385,7 @@
                 </div>
             `).join('');
 
-            // Renderiza Lembretes e Botão de Exportação Individual
+            // Renderiza Lembretes
             document.getElementById('reminders-list').innerHTML = rems.map(r => `
                 <div class="bg-[#1C1C1E] p-4 rounded-2xl flex justify-between items-center border border-white/5 border-l-4 border-l-[#FF3B30]">
                     <div class="flex-1" onclick="addNativeCalendar('${r.text}', '${r.date}', '${r.time}')">
@@ -387,7 +400,6 @@
             
             lucide.createIcons();
             
-            // Auto-scroll chat
             const chatSection = document.getElementById('tab-chat');
             chatSection.scrollTop = chatSection.scrollHeight;
         }
