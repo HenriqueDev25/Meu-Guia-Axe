@@ -7,117 +7,160 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         
+        :root {
+            --bg-base: #000000;
+            --bg-elevated: #1C1C1E;
+            --bg-elevated-2: #2C2C2E;
+            --accent: #FF3B30;
+            --accent-dark: #D70015;
+            --text-primary: #FFFFFF;
+            --text-secondary: #8E8E93;
+        }
+
         body { 
-            font-family: 'Inter', sans-serif; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
             -webkit-tap-highlight-color: transparent; 
-            background: #0B141A; 
-            color: white; 
-            overflow: hidden; 
+            background: var(--bg-base); 
+            color: var(--text-primary); 
+            overflow: hidden;
+            overscroll-behavior-y: none;
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .tab-content { display: none; height: 100%; overflow-y: auto; }
+        
+        .tab-content { 
+            display: none; 
+            height: 100%; 
+            overflow-y: auto; 
+            padding-bottom: 140px; 
+            animation: fadeIn 0.3s ease;
+        }
         .tab-content.active { display: block; }
 
-        /* Estilo Caderno Pautado - Ajustado para alinhar o texto */
-        .notebook-card {
-            background-color: #121212;
-            background-image: linear-gradient(#1a1a1a 1px, transparent 1px);
-            background-size: 100% 30px;
-            border-left: 6px solid #e11d48;
-            border-radius: 12px;
-            min-height: 120px;
-            line-height: 30px;
-            box-shadow: 0 10px 15px rgba(0,0,0,0.5);
-            padding-top: 4px;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .checked-item { text-decoration: line-through; opacity: 0.3; }
+        /* Efeito Blur para Barras */
+        .glass-bar {
+            background: rgba(28, 28, 30, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
 
-        main { padding-bottom: 120px; }
+        /* Inputs nativos otimizados para não dar zoom no mobile */
+        input[type="text"], input[type="date"], input[type="time"] {
+            font-size: 16px; 
+            appearance: none;
+        }
 
-        /* Estilo para avisos de privacidade */
+        .checked-item { 
+            text-decoration: line-through; 
+            color: var(--text-secondary);
+        }
+
         .privacy-box {
-            font-size: 10px;
-            color: #71717a;
+            font-size: 11px;
+            color: var(--text-secondary);
             text-align: center;
-            padding: 20px;
-            line-height: 1.4;
+            padding: 24px;
+            margin-top: 10px;
         }
     </style>
 </head>
-<body class="h-screen flex flex-col">
+<body class="h-screen flex flex-col selection:bg-red-500/30">
 
-    <header class="bg-[#202C33] p-4 border-b border-zinc-800 flex items-center justify-center gap-3 shrink-0">
-        <img src="logo.png" class="h-6 w-6 object-contain" onerror="this.style.display='none'">
-        <h1 class="text-[10px] font-black tracking-[0.4em] text-zinc-400 uppercase">Meu Guia Axe</h1>
+    <!-- Header Fixo -->
+    <header class="glass-bar p-4 border-b border-white/10 flex items-center justify-center gap-2 shrink-0 z-50 pt-safe">
+        <img src="logo.png" class="h-5 w-5 object-contain rounded-md" onerror="this.style.display='none'">
+        <h1 class="text-xs font-bold tracking-widest text-zinc-300 uppercase">Meu Guia Axe</h1>
     </header>
 
+    <!-- Conteúdo Principal -->
     <main class="flex-1 overflow-hidden relative">
         
+        <!-- Tab: Chat -->
         <section id="tab-chat" class="tab-content active p-4 no-scrollbar">
-            <div id="chat-messages" class="flex flex-col gap-3"></div>
+            <div id="chat-messages" class="flex flex-col gap-4"></div>
             <div class="privacy-box">
-                Uso individual: os dados são armazenados localmente no seu dispositivo.
+                Os dados do chat são armazenados localmente e criptografados[cite: 1].
             </div>
         </section>
 
+        <!-- Tab: Notas -->
         <section id="tab-notes" class="tab-content p-4 no-scrollbar">
-            <h2 class="text-zinc-500 text-[9px] font-black tracking-[0.3em] mb-4 uppercase text-center">Fundamentos e Notas</h2>
-            <div id="notes-list" class="flex flex-col gap-6"></div>
+            <h2 class="text-zinc-500 text-[10px] font-bold tracking-[0.2em] mb-4 uppercase text-center">Fundamentos e Notas</h2>
+            <div id="notes-list" class="flex flex-col gap-3"></div>
         </section>
 
+        <!-- Tab: Datas -->
         <section id="tab-dates" class="tab-content p-4 no-scrollbar">
-            <div class="bg-zinc-800/40 p-6 rounded-[24px] border border-zinc-700 mb-6 shadow-xl">
-                <p class="text-[9px] font-black text-red-600 tracking-widest uppercase mb-4">Novo Lembrete</p>
-                <input type="text" id="d-title" placeholder="O que avisar?" class="w-full bg-transparent border-b border-zinc-700 p-2 mb-6 outline-none text-white font-bold">
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <input type="date" id="d-day" class="bg-zinc-900 p-3 rounded-xl text-white text-xs border border-zinc-800">
-                    <input type="time" id="d-time" class="bg-zinc-900 p-3 rounded-xl text-white text-xs border border-zinc-800">
+            <div class="bg-[#1C1C1E] p-5 rounded-3xl border border-white/5 mb-6 shadow-sm">
+                <p class="text-[10px] font-bold text-[#FF3B30] tracking-wider uppercase mb-5">Novo Lembrete</p>
+                <input type="text" id="d-title" placeholder="Título do lembrete" class="w-full bg-[#2C2C2E] rounded-xl p-4 mb-4 outline-none text-white font-medium placeholder-zinc-500 transition-colors focus:ring-2 focus:ring-[#FF3B30]/50">
+                <div class="grid grid-cols-2 gap-3 mb-5">
+                    <input type="date" id="d-day" class="bg-[#2C2C2E] p-4 rounded-xl text-white outline-none w-full text-center">
+                    <input type="time" id="d-time" class="bg-[#2C2C2E] p-4 rounded-xl text-white outline-none w-full text-center">
                 </div>
-                <button onclick="addReminder()" class="w-full bg-red-700 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest">Agendar</button>
+                <button onclick="addReminder()" class="w-full bg-[#FF3B30] hover:bg-[#D70015] transition-colors py-4 rounded-xl font-bold text-[13px] text-white active:scale-95">Adicionar Lembrete</button>
             </div>
             <div id="reminders-list" class="flex flex-col gap-3"></div>
         </section>
 
+        <!-- Tab: Compras -->
         <section id="tab-buy" class="tab-content p-4 no-scrollbar">
-            <div class="bg-zinc-800/40 p-5 rounded-[24px] border border-zinc-700 mb-4">
-                <div class="flex justify-between items-center mb-4">
-                    <p class="text-[9px] font-black text-red-600 uppercase tracking-widest">Compras</p>
-                    <span id="b-count" class="text-[9px] font-black text-zinc-500 bg-zinc-900 px-2 py-1 rounded">0 ITENS</span>
+            <div class="bg-[#1C1C1E] p-4 rounded-3xl border border-white/5 mb-5 shadow-sm">
+                <div class="flex justify-between items-center mb-4 px-1">
+                    <p class="text-[10px] font-bold text-[#FF3B30] uppercase tracking-wider">Lista de Compras</p>
+                    <span id="b-count" class="text-[10px] font-bold text-zinc-400 bg-[#2C2C2E] px-2.5 py-1 rounded-md">0</span>
                 </div>
                 <div class="flex gap-2">
-                    <input type="text" id="b-input" placeholder="Adicionar item..." class="flex-1 bg-transparent border-b border-zinc-700 p-2 text-white text-sm outline-none">
-                    <button onclick="addBuy()" class="bg-red-700 p-3 rounded-xl active:scale-90"><i data-lucide="plus" size="20"></i></button>
+                    <input type="text" id="b-input" placeholder="Novo item..." class="flex-1 bg-[#2C2C2E] rounded-xl p-3 px-4 text-white outline-none font-medium placeholder-zinc-500">
+                    <button onclick="addBuy()" class="bg-[#FF3B30] text-white p-3 px-4 rounded-xl active:scale-90 transition-transform"><i data-lucide="plus" size="20"></i></button>
                 </div>
             </div>
-            <div id="buy-list" class="flex flex-col gap-2 mb-4"></div>
-            <button onclick="shareBuy()" class="w-full bg-[#25D366] text-black py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95">
-                <i data-lucide="share-2" size="16"></i> Enviar via WhatsApp
+            <div id="buy-list" class="flex flex-col gap-2 mb-6"></div>
+            <button onclick="shareBuy()" class="w-full bg-[#34C759] text-white py-4 rounded-xl font-bold text-[13px] flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-lg shadow-[#34C759]/20">
+                <i data-lucide="share" size="18"></i> Compartilhar
             </button>
         </section>
     </main>
 
-    <div id="input-bar" class="fixed bottom-20 w-full p-4 bg-[#0B141A] flex gap-2 items-center z-40">
-        <div class="flex-1 bg-[#2A3942] rounded-2xl px-4">
-            <input type="text" id="c-input" placeholder="Digite o axe..." class="w-full bg-transparent outline-none h-12 text-sm text-white" onkeyup="checkCorrection(event)">
+    <!-- Barra de Input (Apenas no Chat) -->
+    <div id="input-bar" class="fixed bottom-[72px] w-full p-3 glass-bar border-t border-white/5 flex gap-2 items-center z-40 transition-all">
+        <div class="flex-1 bg-[#2C2C2E] rounded-full px-4 flex items-center border border-white/5">
+            <input type="text" id="c-input" placeholder="Escreva (ex: tomar banho amanhã às 14:00)..." class="w-full bg-transparent outline-none h-11 text-[15px] text-white" onkeyup="checkCorrection(event)">
         </div>
-        <button onclick="sendMsg()" class="bg-red-700 p-4 rounded-full shadow-lg active:scale-90">
-            <i data-lucide="send" size="20"></i>
+        <button onclick="sendMsg()" class="bg-[#FF3B30] text-white h-11 w-11 rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform">
+            <i data-lucide="arrow-up" size="20"></i>
         </button>
     </div>
 
-    <nav class="fixed bottom-0 w-full bg-[#202C33] flex justify-around p-3 border-t border-zinc-800 pb-8 z-50">
-        <button onclick="switchTab('tab-chat')" class="flex flex-col items-center gap-1 text-red-600" id="nav-tab-chat"><i data-lucide="message-square" size="18"></i><span class="text-[8px] font-black uppercase">Conversa</span></button>
-        <button onclick="switchTab('tab-notes')" class="flex flex-col items-center gap-1 text-zinc-500" id="nav-tab-notes"><i data-lucide="sticky-note" size="18"></i><span class="text-[8px] font-black uppercase">Notas</span></button>
-        <button onclick="switchTab('tab-dates')" class="flex flex-col items-center gap-1 text-zinc-500" id="nav-tab-dates"><i data-lucide="calendar-clock" size="18"></i><span class="text-[8px] font-black uppercase">Datas</span></button>
-        <button onclick="switchTab('tab-buy')" class="flex flex-col items-center gap-1 text-zinc-500" id="nav-tab-buy"><i data-lucide="shopping-cart" size="18"></i><span class="text-[8px] font-black uppercase">Compras</span></button>
+    <!-- Navegação Inferior -->
+    <nav class="fixed bottom-0 w-full glass-bar border-t border-white/10 flex justify-around p-2 pb-safe z-50">
+        <button onclick="switchTab('tab-chat')" class="nav-btn flex flex-col items-center gap-1 p-2 text-[#FF3B30] transition-colors w-16" id="nav-tab-chat">
+            <i data-lucide="message-circle" size="22"></i>
+            <span class="text-[9px] font-semibold mt-0.5">Chat</span>
+        </button>
+        <button onclick="switchTab('tab-notes')" class="nav-btn flex flex-col items-center gap-1 p-2 text-[#8E8E93] transition-colors w-16" id="nav-tab-notes">
+            <i data-lucide="book" size="22"></i>
+            <span class="text-[9px] font-semibold mt-0.5">Notas</span>
+        </button>
+        <button onclick="switchTab('tab-dates')" class="nav-btn flex flex-col items-center gap-1 p-2 text-[#8E8E93] transition-colors w-16" id="nav-tab-dates">
+            <i data-lucide="calendar" size="22"></i>
+            <span class="text-[9px] font-semibold mt-0.5">Datas</span>
+        </button>
+        <button onclick="switchTab('tab-buy')" class="nav-btn flex flex-col items-center gap-1 p-2 text-[#8E8E93] transition-colors w-16" id="nav-tab-buy">
+            <i data-lucide="shopping-bag" size="22"></i>
+            <span class="text-[9px] font-semibold mt-0.5">Compras</span>
+        </button>
     </nav>
 
+    <!-- Configuração do Firebase original mantida -->
     <script type="module">
-        // --- FIREBASE SETUP ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
         import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-messaging.js";
 
@@ -134,7 +177,6 @@
         const app = initializeApp(firebaseConfig);
         const messaging = getMessaging(app);
 
-        // Solicitar Token para Notificações Web
         async function initFCM() {
             try {
                 const permission = await Notification.requestPermission();
@@ -142,17 +184,11 @@
                     const token = await getToken(messaging, { 
                         vapidKey: 'BO3q1vuQR5Il-IFvmgfOpQin4hS9lZe9dN6RAHFRp-aQYWw3RC9v9XdyK4rMM31O4kpwEk26jeXsAbGorwd0pgc' 
                     });
-                    if (token) {
-                        console.log("Token FCM Gerado:", token);
-                        // Henrique, use este token no Console do Firebase para testar o envio
-                    }
+                    if (token) console.log("Token FCM Gerado:", token);
                 }
-            } catch (err) {
-                console.log("Erro ao obter token FCM:", err);
-            }
+            } catch (err) { console.log("Erro ao obter token FCM:", err); }
         }
 
-        // Ouvir mensagens com o site aberto
         onMessage(messaging, (payload) => {
             alert(`${payload.notification.title}: ${payload.notification.body}`);
         });
@@ -160,22 +196,24 @@
         initFCM();
     </script>
 
+    <!-- Lógica JavaScript do App -->
     <script>
-        // --- LOGICA DO APP ---
         let msgs = JSON.parse(localStorage.getItem('axe_m')) || [];
         let rems = JSON.parse(localStorage.getItem('axe_r')) || [];
         let buys = JSON.parse(localStorage.getItem('axe_b')) || [];
 
-        const dictionary = { "axe": "Axe", "og": "Ogum", "iem": "Iemanja", "pret": "Preto Velho", "cab": "Caboclo", "xa": "Xango", "ox": "Oxossi", "ans": "Iansa" };
+        const dictionary = { "axe": "Axé", "og": "Ogum", "iem": "Iemanjá", "pret": "Preto Velho", "cab": "Caboclo", "xa": "Xangô", "ox": "Oxóssi", "ans": "Iansã" };
 
         window.switchTab = function(id) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById(id).classList.add('active');
+            
             ['tab-chat', 'tab-notes', 'tab-dates', 'tab-buy'].forEach(t => {
                 const nav = document.getElementById('nav-' + t);
-                nav.classList.replace('text-red-600', 'text-zinc-500');
+                nav.classList.replace('text-[#FF3B30]', 'text-[#8E8E93]');
             });
-            document.getElementById('nav-' + id).classList.replace('text-zinc-500', 'text-red-600');
+            
+            document.getElementById('nav-' + id).classList.replace('text-[#8E8E93]', 'text-[#FF3B30]');
             document.getElementById('input-bar').style.display = (id === 'tab-chat') ? 'flex' : 'none';
             lucide.createIcons();
         }
@@ -190,23 +228,100 @@
             }
         }
 
+        // Inteligência para interpretar texto e transformar em data/hora
+        window.analisarLembrete = function(texto) {
+            texto = texto.toLowerCase();
+            // Detecta: [tarefa] + [dia da semana / hoje / amanhã] + [opcional: as/às 14:00]
+            const regex = /(.*?)\s+(segunda|terça|terca|quarta|quinta|sexta|sábado|sabado|domingo|amanhã|amanha|hoje)(?:\s+(?:as|às)\s+(\d{1,2}(?::\d{2})?))?/i;
+            const match = texto.match(regex);
+            
+            if(match) {
+                let tarefa = match[1].replace(/^(lembrar de|lembrete de|lembrar|quero)\s+/i, "").trim();
+                if(!tarefa) tarefa = "Lembrete";
+                
+                let diaTexto = match[2];
+                let horaTexto = match[3]; 
+                
+                if(!horaTexto) horaTexto = "08:00"; // Horário padrão
+                if(!horaTexto.includes(":")) horaTexto += ":00";
+                if(horaTexto.length === 4) horaTexto = "0" + horaTexto; 
+
+                let hoje = new Date();
+                let dataAlvo = new Date(hoje);
+                const mapaDias = {"domingo":0, "segunda":1, "terça":2, "terca":2, "quarta":3, "quinta":4, "sexta":5, "sábado":6, "sabado":6};
+                
+                if(diaTexto === "amanhã" || diaTexto === "amanha") {
+                    dataAlvo.setDate(hoje.getDate() + 1);
+                } else if(diaTexto !== "hoje") {
+                    let diaDesejado = mapaDias[diaTexto];
+                    let diaAtual = hoje.getDay();
+                    let diff = diaDesejado - diaAtual;
+                    if(diff <= 0) diff += 7; // Próxima semana
+                    dataAlvo.setDate(hoje.getDate() + diff);
+                }
+
+                let dataFormatada = dataAlvo.toISOString().split('T')[0];
+                return { 
+                    tarefa: tarefa.charAt(0).toUpperCase() + tarefa.slice(1), 
+                    dataFormatada, 
+                    horaTexto 
+                };
+            }
+            return null;
+        }
+
         window.sendMsg = function() {
             let i = document.getElementById('c-input');
-            if(!i.value.trim()) return;
-            msgs.push({id: Date.now(), text: i.value, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})});
+            let txt = i.value.trim();
+            if(!txt) return;
+
+            let intel = analisarLembrete(txt);
+            
+            msgs.push({
+                id: Date.now(), 
+                text: txt, 
+                time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+                smart: intel 
+            });
+
+            if(intel) {
+                let ts = new Date(`${intel.dataFormatada}T${intel.horaTexto}`).getTime();
+                rems.push({id: ts, text: intel.tarefa, date: intel.dataFormatada, time: intel.horaTexto});
+            }
+
             i.value = ""; render(); save();
+        }
+
+        // Função nativa para criar notificação no relógio/calendário
+        window.addNativeCalendar = function(title, dateInput, timeInput) {
+            let [y, m, d] = dateInput.split('-');
+            let [h, min] = timeInput.split(':');
+            let dataInicio = `${y}${m}${d}T${h}${min}00`;
+            
+            let hFim = String((parseInt(h) + 1) % 24).padStart(2, '0');
+            let dataFim = `${y}${m}${d}T${hFim}${min}00`;
+
+            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${dataInicio}\nDTEND:${dataFim}\nSUMMARY:${title}\nDESCRIPTION:Lembrete ativado pelo Meu Guia.\nBEGIN:VALARM\nTRIGGER:-PT0M\nACTION:DISPLAY\nDESCRIPTION:Lembrete\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR`;
+
+            let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            let url = window.URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = `${title.replace(/\s+/g, '_')}.ics`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
         window.addReminder = function() {
             let t = document.getElementById('d-title'), d = document.getElementById('d-day'), h = document.getElementById('d-time');
             if(!t.value || !d.value || !h.value) return;
             let ts = new Date(`${d.value}T${h.value}`).getTime();
-            if(ts < Date.now()) return alert("Data ja passou!");
+            if(ts < Date.now()) return alert("Data já passou!");
             
             rems.push({id: ts, text: t.value, date: d.value, time: h.value});
             t.value = ""; d.value = ""; h.value = "";
             render(); save();
-            alert("Lembrete salvo no seu dispositivo!");
         }
 
         window.addBuy = function() {
@@ -217,49 +332,64 @@
         }
 
         window.render = function() {
+            // Renderiza Mensagens e o Botão Inteligente
             document.getElementById('chat-messages').innerHTML = msgs.map(m => `
-                <div class="self-end bg-red-700 p-3 rounded-2xl rounded-tr-none max-w-[85%] shadow-lg">
-                    <p class="text-sm font-bold text-white">${m.text}</p>
-                    <p class="text-[8px] text-red-200 text-right mt-1 font-black">${m.time}</p>
+                <div class="self-end bg-[#FF3B30] p-3 px-4 rounded-2xl rounded-tr-sm max-w-[80%] shadow-sm transition-all">
+                    <p class="text-[15px] font-medium text-white leading-snug">${m.text}</p>
+                    ${m.smart ? `
+                        <button onclick="addNativeCalendar('${m.smart.tarefa}', '${m.smart.dataFormatada}', '${m.smart.horaTexto}')" class="mt-3 bg-black/20 hover:bg-black/30 text-white text-[11px] font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 active:scale-95 transition-all w-full shadow-inner">
+                            <i data-lucide="alarm-clock" size="14"></i> Adicionar no Celular
+                        </button>
+                    ` : ''}
+                    <p class="text-[10px] text-white/70 text-right mt-2 font-medium">${m.time}</p>
                 </div>
             `).join('');
 
+            // Renderiza Notas
             const nList = document.getElementById('notes-list');
             if(msgs.length === 0) {
-                nList.innerHTML = `<div class="notebook-card flex items-center justify-center opacity-20"><p class="text-[10px] font-black uppercase tracking-widest">Sem Anotacoes</p></div>`;
+                nList.innerHTML = `<div class="bg-[#1C1C1E] rounded-2xl p-8 flex items-center justify-center opacity-50 border border-white/5"><p class="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Nenhuma anotação</p></div>`;
             } else {
                 nList.innerHTML = msgs.slice().reverse().map(m => `
-                    <div class="notebook-card p-4 flex justify-between items-start gap-4">
-                        <div class="flex-1 font-medium text-xs">${m.text}</div>
-                        <button onclick="delN(${m.id})" class="text-red-600 p-2"><i data-lucide="x" size="16"></i></button>
+                    <div class="bg-[#1C1C1E] p-4 rounded-2xl flex justify-between items-start gap-4 border border-white/5 active:bg-[#2C2C2E] transition-colors">
+                        <div class="flex-1 font-medium text-[14px] text-zinc-200 leading-snug">${m.text}</div>
+                        <button onclick="delN(${m.id})" class="text-zinc-600 hover:text-[#FF3B30] p-1 transition-colors"><i data-lucide="x-circle" size="18"></i></button>
                     </div>
                 `).join('');
             }
 
-            document.getElementById('b-count').innerText = `${buys.filter(b => !b.checked).length} ITENS`;
+            // Renderiza Compras
+            document.getElementById('b-count').innerText = buys.filter(b => !b.checked).length;
             document.getElementById('buy-list').innerHTML = buys.map(b => `
-                <div class="bg-zinc-800/30 p-4 rounded-xl flex items-center justify-between border border-zinc-800">
-                    <div class="flex items-center gap-4 flex-1" onclick="tBuy(${b.id})">
-                        <div class="w-6 h-6 rounded border-2 border-red-700 flex items-center justify-center ${b.checked?'bg-red-700':''}">
+                <div class="bg-[#1C1C1E] p-4 rounded-2xl flex items-center justify-between border border-white/5 transition-colors">
+                    <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="tBuy(${b.id})">
+                        <div class="w-6 h-6 rounded-full border-2 border-zinc-600 flex items-center justify-center transition-colors ${b.checked?'bg-[#FF3B30] border-[#FF3B30]':''}">
                             ${b.checked ? '<i data-lucide="check" class="text-white" size="14"></i>' : ''}
                         </div>
-                        <span class="text-sm font-bold ${b.checked?'checked-item':''}">${b.text}</span>
+                        <span class="text-[15px] font-medium transition-all ${b.checked?'checked-item':''}">${b.text}</span>
                     </div>
-                    <button onclick="delB(${b.id})" class="text-zinc-600"><i data-lucide="trash-2" size="18"></i></button>
+                    <button onclick="delB(${b.id})" class="text-zinc-600 hover:text-[#FF3B30] transition-colors"><i data-lucide="trash" size="18"></i></button>
                 </div>
             `).join('');
 
+            // Renderiza Lembretes e Botão de Exportação Individual
             document.getElementById('reminders-list').innerHTML = rems.map(r => `
-                <div class="bg-zinc-800/40 p-5 rounded-2xl flex justify-between items-center border border-zinc-700">
-                    <div>
-                        <p class="font-bold text-xs">${r.text}</p>
-                        <p class="text-[8px] text-zinc-500 uppercase mt-1 font-black">${r.date.split('-').reverse().join('/')} - ${r.time}</p>
+                <div class="bg-[#1C1C1E] p-4 rounded-2xl flex justify-between items-center border border-white/5 border-l-4 border-l-[#FF3B30]">
+                    <div class="flex-1" onclick="addNativeCalendar('${r.text}', '${r.date}', '${r.time}')">
+                        <p class="font-semibold text-[14px] text-zinc-100 cursor-pointer">${r.text}</p>
+                        <p class="text-[11px] text-[#FF3B30]/80 mt-1 font-medium flex items-center gap-1">
+                            <i data-lucide="clock" size="10"></i> ${r.date.split('-').reverse().join('/')} às ${r.time}
+                        </p>
                     </div>
-                    <button onclick="delR(${r.id})" class="text-red-500 p-2"><i data-lucide="trash-2" size="18"></i></button>
+                    <button onclick="delR(${r.id})" class="text-zinc-600 hover:text-[#FF3B30] p-2 transition-colors ml-2"><i data-lucide="trash" size="18"></i></button>
                 </div>
             `).join('');
             
             lucide.createIcons();
+            
+            // Auto-scroll chat
+            const chatSection = document.getElementById('tab-chat');
+            chatSection.scrollTop = chatSection.scrollHeight;
         }
 
         window.delN = function(id) { msgs = msgs.filter(m => m.id !== id); render(); save(); }
@@ -274,7 +404,7 @@
         }
 
         window.shareBuy = function() { 
-            let t = "*LISTA DE COMPRAS - AXE*\n\n" + buys.map(b => (b.checked?"~":"- ")+b.text+(b.checked?"~":"")).join("\n"); 
+            let t = "*LISTA DE COMPRAS - AXÉ*\n\n" + buys.map(b => (b.checked?"~":"- ")+b.text+(b.checked?"~":"")).join("\n"); 
             window.location.href = "whatsapp://send?text=" + encodeURIComponent(t); 
         }
 
