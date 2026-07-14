@@ -44,14 +44,12 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Efeito Blur para Barras */
         .glass-bar {
             background: rgba(28, 28, 30, 0.75);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
         }
 
-        /* Inputs nativos otimizados para não dar zoom no mobile */
         input[type="text"], input[type="date"], input[type="time"] {
             font-size: 16px; 
             appearance: none;
@@ -73,30 +71,25 @@
 </head>
 <body class="h-screen flex flex-col selection:bg-red-500/30">
 
-    <!-- Header Fixo -->
     <header class="glass-bar p-4 border-b border-white/10 flex items-center justify-center gap-2 shrink-0 z-50 pt-safe">
         <img src="logo.png" class="h-5 w-5 object-contain rounded-md" onerror="this.style.display='none'">
         <h1 class="text-xs font-bold tracking-widest text-zinc-300 uppercase">Meu Guia Axe</h1>
     </header>
 
-    <!-- Conteúdo Principal -->
     <main class="flex-1 overflow-hidden relative">
         
-        <!-- Tab: Chat -->
         <section id="tab-chat" class="tab-content active p-4 no-scrollbar">
             <div id="chat-messages" class="flex flex-col gap-4"></div>
             <div class="privacy-box">
-                Os dados do chat são armazenados localmente e criptografados.
+                Os dados do chat são armazenados localmente e criptografados[cite: 1].
             </div>
         </section>
 
-        <!-- Tab: Notas -->
         <section id="tab-notes" class="tab-content p-4 no-scrollbar">
             <h2 class="text-zinc-500 text-[10px] font-bold tracking-[0.2em] mb-4 uppercase text-center">Fundamentos e Notas</h2>
             <div id="notes-list" class="flex flex-col gap-3"></div>
         </section>
 
-        <!-- Tab: Datas -->
         <section id="tab-dates" class="tab-content p-4 no-scrollbar">
             <div class="bg-[#1C1C1E] p-5 rounded-3xl border border-white/5 mb-6 shadow-sm">
                 <p class="text-[10px] font-bold text-[#FF3B30] tracking-wider uppercase mb-5">Novo Lembrete</p>
@@ -110,7 +103,6 @@
             <div id="reminders-list" class="flex flex-col gap-3"></div>
         </section>
 
-        <!-- Tab: Compras -->
         <section id="tab-buy" class="tab-content p-4 no-scrollbar">
             <div class="bg-[#1C1C1E] p-4 rounded-3xl border border-white/5 mb-5 shadow-sm">
                 <div class="flex justify-between items-center mb-4 px-1">
@@ -129,17 +121,15 @@
         </section>
     </main>
 
-    <!-- Barra de Input (Apenas no Chat) -->
     <div id="input-bar" class="fixed bottom-[72px] w-full p-3 glass-bar border-t border-white/5 flex gap-2 items-center z-40 transition-all">
         <div class="flex-1 bg-[#2C2C2E] rounded-full px-4 flex items-center border border-white/5">
-            <input type="text" id="c-input" placeholder="Escreva (ex: tomar banho amanhã às 14:00)..." class="w-full bg-transparent outline-none h-11 text-[15px] text-white" onkeyup="checkCorrection(event)">
+            <input type="text" id="c-input" placeholder="Ex: tomar banho segunda às 14:00..." class="w-full bg-transparent outline-none h-11 text-[15px] text-white" onkeyup="checkCorrection(event)">
         </div>
         <button onclick="sendMsg()" class="bg-[#FF3B30] text-white h-11 w-11 rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform">
             <i data-lucide="arrow-up" size="20"></i>
         </button>
     </div>
 
-    <!-- Navegação Inferior -->
     <nav class="fixed bottom-0 w-full glass-bar border-t border-white/10 flex justify-around p-2 pb-safe z-50">
         <button onclick="switchTab('tab-chat')" class="nav-btn flex flex-col items-center gap-1 p-2 text-[#FF3B30] transition-colors w-16" id="nav-tab-chat">
             <i data-lucide="message-circle" size="22"></i>
@@ -159,7 +149,6 @@
         </button>
     </nav>
 
-    <!-- Configuração do Firebase original mantida -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
         import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-messaging.js";
@@ -196,7 +185,6 @@
         initFCM();
     </script>
 
-    <!-- Lógica JavaScript do App -->
     <script>
         let msgs = JSON.parse(localStorage.getItem('axe_m')) || [];
         let rems = JSON.parse(localStorage.getItem('axe_r')) || [];
@@ -228,7 +216,6 @@
             }
         }
 
-        // Inteligência para interpretar texto
         window.analisarLembrete = function(texto) {
             texto = texto.toLowerCase();
             const regex = /(.*?)\s+(segunda|terça|terca|quarta|quinta|sexta|sábado|sabado|domingo|amanhã|amanha|hoje)(?:\s+(?:as|às)\s+(\d{1,2}(?::\d{2})?))?/i;
@@ -269,7 +256,7 @@
             return null;
         }
 
-        // API Nativa de Calendário
+        // INTEGRAÇÃO NATIVA FOCADA EM MOBILE
         window.addNativeCalendar = function(title, dateInput, timeInput) {
             let [y, m, d] = dateInput.split('-');
             let [h, min] = timeInput.split(':');
@@ -278,24 +265,40 @@
             let hFim = String((parseInt(h) + 1) % 24).padStart(2, '0');
             let dataFim = `${y}${m}${d}T${hFim}${min}00`;
 
-            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${dataInicio}\nDTEND:${dataFim}\nSUMMARY:${title}\nDESCRIPTION:Adicionado pelo Meu Guia.\nBEGIN:VALARM\nTRIGGER:-PT0M\nACTION:DISPLAY\nDESCRIPTION:Lembrete\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR`;
+            // Detecta o sistema do celular
+            let isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-            // Tentativa 1: Usar compartilhamento nativo do iOS/Android (Web Share API)
-            if (navigator.share && navigator.canShare) {
-                const file = new File([icsContent], 'lembrete.ics', { type: 'text/calendar' });
-                if (navigator.canShare({ files: [file] })) {
-                    navigator.share({
-                        files: [file],
-                        title: title,
-                        text: 'Salvar Lembrete'
-                    }).catch(err => console.log('Usuário cancelou ou erro no share:', err));
-                    return; // Se funcionou, encerra a função
-                }
+            if (isIOS) {
+                // Estratégia iOS: Download de arquivo .ics dispara a tela de calendário da Apple
+                let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${dataInicio}\nDTEND:${dataFim}\nSUMMARY:${title}\nDESCRIPTION:Criado no Meu Guia.\nBEGIN:VALARM\nTRIGGER:-PT0M\nACTION:DISPLAY\nDESCRIPTION:Lembrete\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR`;
+                
+                let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+                let url = window.URL.createObjectURL(blob);
+                
+                let a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'lembrete.ics';
+                document.body.appendChild(a);
+                a.click();
+                
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 100);
+            } else {
+                // Estratégia Android/PC: Link direto do Google Calendar abre o app no Android
+                let gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dataInicio}/${dataFim}&details=Criado+no+Meu+Guia`;
+                
+                let a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = gCalUrl;
+                a.target = '_blank';
+                document.body.appendChild(a);
+                a.click();
+                
+                setTimeout(() => document.body.removeChild(a), 100);
             }
-
-            // Tentativa 2: Fallback direto para o Google Agenda (Funciona sempre em qualquer mobile)
-            let gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dataInicio}/${dataFim}&details=Adicionado+pelo+Meu+Guia`;
-            window.open(gCalUrl, '_blank');
         }
 
         window.sendMsg = function() {
@@ -316,7 +319,7 @@
                 let ts = new Date(`${intel.dataFormatada}T${intel.horaTexto}`).getTime();
                 rems.push({id: ts, text: intel.tarefa, date: intel.dataFormatada, time: intel.horaTexto});
                 
-                // Dispara o calendário IMEDIATAMENTE e AUTOMATICAMENTE junto com o clique do usuário
+                // Abre o calendário IMEDIATAMENTE no celular sem precisar de um segundo clique
                 addNativeCalendar(intel.tarefa, intel.dataFormatada, intel.horaTexto);
             }
 
@@ -330,7 +333,8 @@
             if(ts < Date.now()) return alert("Data já passou!");
             
             rems.push({id: ts, text: t.value, date: d.value, time: h.value});
-            // Também adiciona no celular quando preenchido manualmente
+            
+            // Ativa o calendário nativo
             addNativeCalendar(t.value, d.value, h.value);
             
             t.value = ""; d.value = ""; h.value = "";
@@ -345,20 +349,18 @@
         }
 
         window.render = function() {
-            // Renderiza Mensagens
             document.getElementById('chat-messages').innerHTML = msgs.map(m => `
                 <div class="self-end bg-[#FF3B30] p-3 px-4 rounded-2xl rounded-tr-sm max-w-[80%] shadow-sm transition-all">
                     <p class="text-[15px] font-medium text-white leading-snug">${m.text}</p>
                     ${m.smart ? `
                         <button onclick="addNativeCalendar('${m.smart.tarefa}', '${m.smart.dataFormatada}', '${m.smart.horaTexto}')" class="mt-3 bg-black/20 hover:bg-black/30 text-white text-[11px] font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 active:scale-95 transition-all w-full shadow-inner">
-                            <i data-lucide="refresh-cw" size="14"></i> Reabrir Calendário
+                            <i data-lucide="refresh-cw" size="14"></i> Tentar Salvar Novamente
                         </button>
                     ` : ''}
                     <p class="text-[10px] text-white/70 text-right mt-2 font-medium">${m.time}</p>
                 </div>
             `).join('');
 
-            // Renderiza Notas
             const nList = document.getElementById('notes-list');
             if(msgs.length === 0) {
                 nList.innerHTML = `<div class="bg-[#1C1C1E] rounded-2xl p-8 flex items-center justify-center opacity-50 border border-white/5"><p class="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Nenhuma anotação</p></div>`;
@@ -371,7 +373,6 @@
                 `).join('');
             }
 
-            // Renderiza Compras
             document.getElementById('b-count').innerText = buys.filter(b => !b.checked).length;
             document.getElementById('buy-list').innerHTML = buys.map(b => `
                 <div class="bg-[#1C1C1E] p-4 rounded-2xl flex items-center justify-between border border-white/5 transition-colors">
@@ -385,7 +386,6 @@
                 </div>
             `).join('');
 
-            // Renderiza Lembretes
             document.getElementById('reminders-list').innerHTML = rems.map(r => `
                 <div class="bg-[#1C1C1E] p-4 rounded-2xl flex justify-between items-center border border-white/5 border-l-4 border-l-[#FF3B30]">
                     <div class="flex-1" onclick="addNativeCalendar('${r.text}', '${r.date}', '${r.time}')">
@@ -399,7 +399,6 @@
             `).join('');
             
             lucide.createIcons();
-            
             const chatSection = document.getElementById('tab-chat');
             chatSection.scrollTop = chatSection.scrollHeight;
         }
