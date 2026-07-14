@@ -81,7 +81,7 @@
         <section id="tab-chat" class="tab-content active p-4 no-scrollbar">
             <div id="chat-messages" class="flex flex-col gap-4"></div>
             <div class="privacy-box">
-                Os dados do chat são armazenados localmente e criptografados[cite: 1].
+                Os dados do chat são armazenados localmente e criptografados.
             </div>
         </section>
 
@@ -98,7 +98,7 @@
                     <input type="date" id="d-day" class="bg-[#2C2C2E] p-4 rounded-xl text-white outline-none w-full text-center">
                     <input type="time" id="d-time" class="bg-[#2C2C2E] p-4 rounded-xl text-white outline-none w-full text-center">
                 </div>
-                <button onclick="addReminder()" class="w-full bg-[#FF3B30] hover:bg-[#D70015] transition-colors py-4 rounded-xl font-bold text-[13px] text-white active:scale-95">Adicionar Lembrete</button>
+                <button onclick="addReminder()" class="w-full bg-[#FF3B30] hover:bg-[#D70015] transition-colors py-4 rounded-xl font-bold text-[13px] text-white active:scale-95">Adicionar no Celular</button>
             </div>
             <div id="reminders-list" class="flex flex-col gap-3"></div>
         </section>
@@ -256,20 +256,25 @@
             return null;
         }
 
-        // INTEGRAÇÃO NATIVA FOCADA EM MOBILE
+        // NOVO: Integração Direta com Relógio no Android e Calendário no iOS
         window.addNativeCalendar = function(title, dateInput, timeInput) {
             let [y, m, d] = dateInput.split('-');
             let [h, min] = timeInput.split(':');
             
-            let dataInicio = `${y}${m}${d}T${h}${min}00`;
-            let hFim = String((parseInt(h) + 1) % 24).padStart(2, '0');
-            let dataFim = `${y}${m}${d}T${hFim}${min}00`;
-
-            // Detecta o sistema do celular
             let isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            let isAndroid = /Android/.test(navigator.userAgent);
 
-            if (isIOS) {
-                // Estratégia iOS: Download de arquivo .ics dispara a tela de calendário da Apple
+            if (isAndroid) {
+                // ESTRATÉGIA ANDROID: Abre diretamente o app RELÓGIO / ALARME
+                let intentUrl = `intent:#Intent;action=android.intent.action.SET_ALARM;i.android.intent.extra.alarm.HOUR=${parseInt(h, 10)};i.android.intent.extra.alarm.MINUTES=${parseInt(min, 10)};S.android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};end`;
+                window.location.href = intentUrl;
+
+            } else if (isIOS) {
+                // ESTRATÉGIA IOS: Continua baixando o evento para abrir o calendário nativo
+                let dataInicio = `${y}${m}${d}T${h}${min}00`;
+                let hFim = String((parseInt(h) + 1) % 24).padStart(2, '0');
+                let dataFim = `${y}${m}${d}T${hFim}${min}00`;
+
                 let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${dataInicio}\nDTEND:${dataFim}\nSUMMARY:${title}\nDESCRIPTION:Criado no Meu Guia.\nBEGIN:VALARM\nTRIGGER:-PT0M\nACTION:DISPLAY\nDESCRIPTION:Lembrete\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR`;
                 
                 let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
@@ -286,18 +291,14 @@
                     document.body.removeChild(a);
                     window.URL.revokeObjectURL(url);
                 }, 100);
+
             } else {
-                // Estratégia Android/PC: Link direto do Google Calendar abre o app no Android
+                // PC / Desktop
+                let dataInicio = `${y}${m}${d}T${h}${min}00`;
+                let hFim = String((parseInt(h) + 1) % 24).padStart(2, '0');
+                let dataFim = `${y}${m}${d}T${hFim}${min}00`;
                 let gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dataInicio}/${dataFim}&details=Criado+no+Meu+Guia`;
-                
-                let a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = gCalUrl;
-                a.target = '_blank';
-                document.body.appendChild(a);
-                a.click();
-                
-                setTimeout(() => document.body.removeChild(a), 100);
+                window.open(gCalUrl, '_blank');
             }
         }
 
@@ -319,7 +320,7 @@
                 let ts = new Date(`${intel.dataFormatada}T${intel.horaTexto}`).getTime();
                 rems.push({id: ts, text: intel.tarefa, date: intel.dataFormatada, time: intel.horaTexto});
                 
-                // Abre o calendário IMEDIATAMENTE no celular sem precisar de um segundo clique
+                // Dispara o Relógio do Android IMEDIATAMENTE
                 addNativeCalendar(intel.tarefa, intel.dataFormatada, intel.horaTexto);
             }
 
@@ -334,7 +335,7 @@
             
             rems.push({id: ts, text: t.value, date: d.value, time: h.value});
             
-            // Ativa o calendário nativo
+            // Ativa o relógio nativo também pelo botão da tela Datas
             addNativeCalendar(t.value, d.value, h.value);
             
             t.value = ""; d.value = ""; h.value = "";
@@ -354,7 +355,7 @@
                     <p class="text-[15px] font-medium text-white leading-snug">${m.text}</p>
                     ${m.smart ? `
                         <button onclick="addNativeCalendar('${m.smart.tarefa}', '${m.smart.dataFormatada}', '${m.smart.horaTexto}')" class="mt-3 bg-black/20 hover:bg-black/30 text-white text-[11px] font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 active:scale-95 transition-all w-full shadow-inner">
-                            <i data-lucide="refresh-cw" size="14"></i> Tentar Salvar Novamente
+                            <i data-lucide="alarm-clock" size="14"></i> Adicionar no Relógio
                         </button>
                     ` : ''}
                     <p class="text-[10px] text-white/70 text-right mt-2 font-medium">${m.time}</p>
