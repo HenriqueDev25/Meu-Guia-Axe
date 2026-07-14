@@ -98,7 +98,7 @@
                     <input type="date" id="d-day" class="bg-[#2C2C2E] p-4 rounded-xl text-white outline-none w-full text-center">
                     <input type="time" id="d-time" class="bg-[#2C2C2E] p-4 rounded-xl text-white outline-none w-full text-center">
                 </div>
-                <button onclick="addReminder()" class="w-full bg-[#FF3B30] hover:bg-[#D70015] transition-colors py-4 rounded-xl font-bold text-[13px] text-white active:scale-95">Adicionar no Celular</button>
+                <button onclick="addReminder()" class="w-full bg-[#FF3B30] hover:bg-[#D70015] transition-colors py-4 rounded-xl font-bold text-[13px] text-white active:scale-95">Adicionar no Calendário</button>
             </div>
             <div id="reminders-list" class="flex flex-col gap-3"></div>
         </section>
@@ -123,7 +123,7 @@
 
     <div id="input-bar" class="fixed bottom-[72px] w-full p-3 glass-bar border-t border-white/5 flex gap-2 items-center z-40 transition-all">
         <div class="flex-1 bg-[#2C2C2E] rounded-full px-4 flex items-center border border-white/5">
-            <input type="text" id="c-input" placeholder="Ex: tomar banho segunda às 14:00..." class="w-full bg-transparent outline-none h-11 text-[15px] text-white" onkeyup="checkCorrection(event)">
+            <input type="text" id="c-input" placeholder="Ex: tomar banho amanhã às 14:00..." class="w-full bg-transparent outline-none h-11 text-[15px] text-white" onkeyup="checkCorrection(event)">
         </div>
         <button onclick="sendMsg()" class="bg-[#FF3B30] text-white h-11 w-11 rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform">
             <i data-lucide="arrow-up" size="20"></i>
@@ -256,7 +256,7 @@
             return null;
         }
 
-        // NOVO: Integração Direta com Relógio no Android e Calendário no iOS
+        // INTEGRAÇÃO NATIVA FOCADA EM MOBILE (CALENDÁRIO)
         window.addNativeCalendar = function(title, dateInput, timeInput) {
             let [y, m, d] = dateInput.split('-');
             let [h, min] = timeInput.split(':');
@@ -265,17 +265,22 @@
             let isAndroid = /Android/.test(navigator.userAgent);
 
             if (isAndroid) {
-                // ESTRATÉGIA ANDROID: Abre diretamente o app RELÓGIO / ALARME
-                let intentUrl = `intent:#Intent;action=android.intent.action.SET_ALARM;i.android.intent.extra.alarm.HOUR=${parseInt(h, 10)};i.android.intent.extra.alarm.MINUTES=${parseInt(min, 10)};S.android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};end`;
+                // ESTRATÉGIA ANDROID (NOVA): Abre diretamente o APP do Google Agenda já logado.
+                let startMs = new Date(`${y}-${m}-${d}T${h}:${min}:00`).getTime();
+                let endMs = startMs + (60 * 60 * 1000); // Adiciona 1 hora de duração
+                
+                // Intent do Android exclusivo para abrir o app nativo
+                let intentUrl = `intent:#Intent;action=android.intent.action.INSERT;type=vnd.android.cursor.item/event;S.title=${encodeURIComponent(title)};S.description=${encodeURIComponent("Criado pelo Meu Guia")};l.beginTime=${startMs};l.endTime=${endMs};end`;
+                
                 window.location.href = intentUrl;
 
             } else if (isIOS) {
-                // ESTRATÉGIA IOS: Continua baixando o evento para abrir o calendário nativo
+                // ESTRATÉGIA IOS: Baixa o evento para abrir o calendário nativo do iPhone
                 let dataInicio = `${y}${m}${d}T${h}${min}00`;
                 let hFim = String((parseInt(h) + 1) % 24).padStart(2, '0');
                 let dataFim = `${y}${m}${d}T${hFim}${min}00`;
 
-                let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${dataInicio}\nDTEND:${dataFim}\nSUMMARY:${title}\nDESCRIPTION:Criado no Meu Guia.\nBEGIN:VALARM\nTRIGGER:-PT0M\nACTION:DISPLAY\nDESCRIPTION:Lembrete\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR`;
+                let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${dataInicio}\nDTEND:${dataFim}\nSUMMARY:${title}\nDESCRIPTION:Criado pelo Meu Guia.\nBEGIN:VALARM\nTRIGGER:-PT0M\nACTION:DISPLAY\nDESCRIPTION:Lembrete\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR`;
                 
                 let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
                 let url = window.URL.createObjectURL(blob);
@@ -293,11 +298,11 @@
                 }, 100);
 
             } else {
-                // PC / Desktop
+                // PC / Desktop (Browser normal)
                 let dataInicio = `${y}${m}${d}T${h}${min}00`;
                 let hFim = String((parseInt(h) + 1) % 24).padStart(2, '0');
                 let dataFim = `${y}${m}${d}T${hFim}${min}00`;
-                let gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dataInicio}/${dataFim}&details=Criado+no+Meu+Guia`;
+                let gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dataInicio}/${dataFim}&details=Criado+pelo+Meu+Guia`;
                 window.open(gCalUrl, '_blank');
             }
         }
@@ -320,7 +325,7 @@
                 let ts = new Date(`${intel.dataFormatada}T${intel.horaTexto}`).getTime();
                 rems.push({id: ts, text: intel.tarefa, date: intel.dataFormatada, time: intel.horaTexto});
                 
-                // Dispara o Relógio do Android IMEDIATAMENTE
+                // Dispara o aplicativo de Calendário do Celular
                 addNativeCalendar(intel.tarefa, intel.dataFormatada, intel.horaTexto);
             }
 
@@ -335,7 +340,7 @@
             
             rems.push({id: ts, text: t.value, date: d.value, time: h.value});
             
-            // Ativa o relógio nativo também pelo botão da tela Datas
+            // Ativa o app de Calendário
             addNativeCalendar(t.value, d.value, h.value);
             
             t.value = ""; d.value = ""; h.value = "";
@@ -355,7 +360,7 @@
                     <p class="text-[15px] font-medium text-white leading-snug">${m.text}</p>
                     ${m.smart ? `
                         <button onclick="addNativeCalendar('${m.smart.tarefa}', '${m.smart.dataFormatada}', '${m.smart.horaTexto}')" class="mt-3 bg-black/20 hover:bg-black/30 text-white text-[11px] font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 active:scale-95 transition-all w-full shadow-inner">
-                            <i data-lucide="alarm-clock" size="14"></i> Adicionar no Relógio
+                            <i data-lucide="calendar" size="14"></i> Adicionar no Calendário
                         </button>
                     ` : ''}
                     <p class="text-[10px] text-white/70 text-right mt-2 font-medium">${m.time}</p>
